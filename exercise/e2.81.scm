@@ -203,7 +203,17 @@
 		(continue-raise new-args)))))))
 
 ;;; exercise 2.85  
+(put 'project 'complex (lambda (x) (real-part x)))
+(put 'project 'rational (lambda (x) (make-rational (floor x) 1)))
+(put 'project 'rational (lambda (x) (numer x)))
 
+(define (project x) (apply-generic 'project x))
+
+(define (drop x)
+  (if (equ? x (raise (project x)))
+      (drop (project x))
+      x))
+      
 
 
 
