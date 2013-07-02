@@ -1,4 +1,58 @@
+;; 
+;;  The play-loop procedure takes as its  arguments two prisoner's
+;;  dilemma strategies, and plays an iterated game of approximately
+;;  one hundred rounds.  A strategy is a procedure that takes
+;;  two arguments: a history of the player's previous plays and 
+;;  a history of the other player's previous plays.  The procedure
+;;  returns either a "c" for cooperate or a "d" for defect.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(define (play-loop strat0 strat1)
+  (define (play-loop-iter strat0 strat1 count history0 history1 limit)
+    (cond ((= count limit) (print-out-results history0 history1 limit))
+	  (else (let ((result0 (strat0 history0 history1))
+		      (result1 (strat1 history1 history0)))
+		  (play-loop-iter strat0 strat1 (+ count 1)
+				  (extend-history result0 history0)
+				  (extend-history result1 history1)
+				  limit)))))
+  (play-loop-iter strat0 strat1 0 the-empty-history the-empty-history
+		  (+ 90 (random 21))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  The following procedures are used to compute and print
+;;  out the players' scores at the end of an iterated game
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (print-out-results history0 history1 number-of-games)
+  (let ((scores (get-scores history0 history1)))
+    (newline)
+    (display "Player 1 Score:  ")
+    (display (* 1.0 (/ (car scores) number-of-games)))
+    (newline)
+    (display "Player 2 Score:  ")
+    (display (* 1.0 (/ (cadr scores) number-of-games)))
+    (newline)))
+
+(define (get-scores history0 history1)
+  (define (get-scores-helper history0 history1 score0 score1)
+    (cond ((empty-history? history0)
+	   (list score0 score1))
+	  (else (let ((game (make-play (most-recent-play history0)
+				       (most-recent-play history1))))
+		  (get-scores-helper (rest-of-plays history0)
+				     (rest-of-plays history1)
+				     (+ (get-player-points 0 game) score0)
+				     (+ (get-player-points 1 game) score1))))))
+  (get-scores-helper history0 history1 0 0))
+
+(define (get-player-points num game)
+  (list-ref (get-point-list game) num))
 
 (define *game-association-list*
   ;; format is that first sublist identifies the players' choices 
@@ -85,6 +139,50 @@
 (define a-play (make-play "c"))
 (extract-entry a-play *game-association-list*)
 ;cannot find game in the list
+
+;; problem 2
+(define players 
+  (list NASTY PATSY SPASTIC EYE-FOR-EYE EGALITARIAN))
+(define (play-game player player-list)
+  (if (null? player-list)
+      (display "done")
+      (play-loop player (car player-list)))
+  (cond ((not (null? player-list))
+	 (play-game player (cdr player-list)))))
+
+(define (all-play-game pl1 pl2)
+  (if (null? pl1)
+      (display "'all-done")
+      (play-game (car pl1) pl2))
+  (cond ((not (null? pl1)) 
+	 (all-play-game (cdr pl1) pl2))))
+(all-play-game players players)
+
+;;; problem 3
+;; -the order of growth is theta(n) in both time and space 
+;;  for the older one. it is recurcive.
+;; -the order of growth is theta(n) in time; theta(1) in spacs
+;;  for the newer
+;; -the newer is faster. it takes n comparisions while the older
+;;  takes 2n comparisions;  and we know recursion is faster then
+;;  iterator 
+
+;;; problem 4
+(define (eye-for-two-eye my-history other-history)
+  (if (and (not (empty-history? other-history))
+	   (string=? (most-recent-play other-history) "d"))
+      (let ((rests (rest-of-plays other-history)))
+	(if (and (not (empty-history? rests))
+		 (string=? (most-recent-play rests) "d"))
+	    "c" "d"))
+      "d"))
+
+(define players 
+  (list NASTY PATSY SPASTIC EYE-FOR-EYE EGALITARIAN eye-for-two-eye))
+(play-game eye-for-two-eye players)
+	
+      
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
