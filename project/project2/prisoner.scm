@@ -131,18 +131,19 @@
 (extract-entry a-play *game-association-list*)
 ;Value 14: (("c" "d") (0 5))
 (define a-play (make-play "c" "e"))
-(extract-entry a-play *game-association-list*)
+;(extract-entry a-play *game-association-list*)
 ;cannot find game in the list
 (define a-play (make-play "c" "c"))
 (extract-entry a-play *game-association-list*)
 ;Value 15: (("c" "c") (3 3))
 (define a-play (make-play "c"))
-(extract-entry a-play *game-association-list*)
+;(extract-entry a-play *game-association-list*)
 ;cannot find game in the list
 
 ;; problem 2
 (define players 
   (list NASTY PATSY SPASTIC EYE-FOR-EYE EGALITARIAN))
+
 (define (play-game player player-list)
   (if (null? player-list)
       (display "done")
@@ -174,14 +175,78 @@
       (let ((rests (rest-of-plays other-history)))
 	(if (and (not (empty-history? rests))
 		 (string=? (most-recent-play rests) "d"))
-	    "c" "d"))
-      "d"))
+	    "d" "c"))
+      "c"))
 
 (define players 
   (list NASTY PATSY SPASTIC EYE-FOR-EYE EGALITARIAN eye-for-two-eye))
 (play-game eye-for-two-eye players)
 	
-      
+;;; problem 5      
+(define (make-eye-for-n-eye n)
+  (define (helper n history)
+    (if (= 0 n)
+	"d"
+	(if (null? history)
+	    "c"
+	    (if (string=? "d" (car history))
+		(helper (- n 1) (cdr history))
+		"c"))))
+  (lambda (my-history other-history)
+    (helper n other-history)))
+(define eye-for2eye (make-eye-for-n-eye 2))
+(define eye-for1eye (make-eye-for-n-eye 1))
+
+(play-game eye-for2eye players)
+(play-game eye-for-two-eye players)
+(play-game eye-for-eye players)
+(play-game eye-for1eye players)
+
+;;; problem 6
+
+(define (make-rotating-stategy stat0 stat1 freq0 freq1)
+  (define r -1)
+  (define f (+ freq0 freq1))
+  (lambda (my-history other-history)
+    (set! r (remainder (+ 1 r) f))
+    (if (< r freq0) 
+	(stat0 my-history other-history)
+	(stat1 my-history other-history))))
+
+(define rs (make-rotating-stategy nasty PATSY 1 1))
+(rs "a" "a")  ;; eval some times
+(define ps (make-rotating-stategy PATSY nasty 1 1))
+(ps "a" "a")  ;; eval some times
+
+;;; problem 7
+(define (make-higher-order-spastic list-stat)
+  (define current (list))
+  (lambda (my-history other-history)
+    (if (null? current)
+	(set! current list-stat)
+	(set! current (cdr current)))
+    (cond ((null? current) (set! current list-stat)))
+    ((car current) my-history other-history)))
+
+(define npp (make-higher-order-spastic (list nasty patsy patsy)))
+(npp "a" "b") ; eval some times
+(define pn (make-higher-order-spastic (list patsy nasty)))
+(pn "a" "b") ; eval some times
+
+;;; problem 8
+(define (gentle stat gentleness-factor)
+  (lambda (my-history other-history)
+    (if (string=? "c" (stat my-history other-history))
+	"c"
+	(let ((r (random 1.0)))
+	  (if (< r gentleness-factor) "c" "d")))))
+
+(define neg-n (gentle nasty 1))
+(neg-n 'a 'b)
+(define neg-n (gentle nasty 0))
+(neg-n 'a 'b)
+(define neg-n (gentle nasty 0.5))
+(neg-n 'a 'b)
 
 
 
