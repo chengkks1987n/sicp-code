@@ -343,34 +343,143 @@
 		 (list "c" "c" "d" "d" "c" "d" "c" "c")
 		 (list "c" "c" "c" "d" "d" "c" "d" "c")
 		 (list "c" "c" "d" "d" "d" "c" "c" "c")))
+;;; problem 13
+(define (get-probability-of-c summary)
+  (let ((tcc (total (cooperate-cooperate summary)))
+	(tdc (total (defect-cooperate summary)))
+	(tdd (total (defect-defect summary)))
+	(ccc (cooperate (cooperate-cooperate summary)))
+	(cdc (cooperate (defect-cooperate summary)))
+	(cdd (cooperate (defect-defect summary))))
+    (let ((cc (if (= 0 tcc) (list) (/ ccc tcc)))
+	  (dc (if (= 0 tdc) (list) (/ cdc tdc)))
+	  (dd (if (= 0 tdd) (list) (/ cdd tdd))))
+      (list cc dc dd))))
 
+; test
+(define summary (make-history-summary
+		 (list "c" "c" "c" "c")
+		 (list "d" "d" "d" "c")
+		 (list "d" "d" "c" "c")))
+(get-probability-of-c summary)
+;Value: (1 1 1)
+(define new-summary (make-history-summary
+		     (list "c" "c" "c" "d" "c")
+		     (list "d" "c" "d" "d" "c")
+		     (list "d" "c" "c" "c" "c")))
+(get-probability-of-c new-summary)
+;Value: (0.5 1 ())
 
-
-
+;;; problem 14
 
 ;; in expected-values: #f = don't care 
 ;;                      X = actual-value needs to be #f or X 
-;(define (test-entry expected-values actual-values) 
-;   (cond ((null? expected-values) (null? actual-values)) 
-;         ((null? actual-values) #f) 
-;         ((or (not (car expected-values)) 
-;              (not (car actual-values)) 
-;              (= (car expected-values) (car actual-values))) 
-;          (test-entry (cdr expected-values) (cdr actual-values))) 
-;         (else #f))) 
-;
-;(define (is-he-a-fool? hist0 hist1 hist2) 
-;   (test-entry (list 1 1 1) 
-;               (get-probability-of-c 
-;                (make-history-summary hist0 hist1 hist2))))
-;
-;(define (could-he-be-a-fool? hist0 hist1 hist2)
-;  (test-entry (list 1 1 1)
-;              (map (lambda (elt) 
-;                      (cond ((null? elt) 1)
-;                            ((= elt 1) 1)  
-;                            (else 0)))
-;                   (get-probability-of-c (make-history-summary hist0 
-;                                                               hist1
-;                                                               hist2)))))
+(define (test-entry expected-values actual-values) 
+   (cond ((null? expected-values) (null? actual-values)) 
+         ((null? actual-values) #f) 
+         ((or (not (car expected-values)) 
+              (not (car actual-values)) 
+              (= (car expected-values) (car actual-values))) 
+          (test-entry (cdr expected-values) (cdr actual-values))) 
+         (else #f))) 
 
+(define (my-test-entry v1 v2)
+  (cond ((null? v1) (null? v2))
+	((null? v2) #f)
+	(else (let ((a1 (car v1))
+		    (a2 (car v2)))
+		(cond ((null? a1) (null? a2))
+		      ((null? a2) #f)
+		      (else (if (= a1 a2)
+				(my-test-entry (cdr v1) (cdr v2))
+				#f)))))))
+
+
+(test-entry (list 1 1 1) (list 1 1 1))
+(test-entry (list 1 1 1) (list 1 1 0))
+(test-entry (list 1 1 (list)) (list 1 1 (list)))
+(test-entry (list 1 1 1) (list 1 1 (list)))
+
+(my-test-entry (list 1 1 1) (list 1 1 1))
+(my-test-entry (list 1 1 1) (list 1 1 0))
+(my-test-entry (list 1 1 (list)) (list 1 1 (list)))
+(my-test-entry (list 1 1 1) (list 1 1 (list)))
+
+(define (is-he-a-fool? hist0 hist1 hist2) 
+   (my-test-entry (list 1 1 1) 
+               (get-probability-of-c 
+                (make-history-summary hist0 hist1 hist2))))
+
+(define (could-he-be-a-fool? hist0 hist1 hist2)
+  (my-test-entry (list 1 1 1)
+              (map (lambda (elt) 
+                      (cond ((null? elt) 1)
+                            ((= elt 1) 1)  
+                            (else 0)))
+                   (get-probability-of-c (make-history-summary hist0 
+                                                               hist1
+                                                               hist2)))))
+
+(define (is-soft-eye-for-eye? hist0 hist1 hist2)
+  (my-test-entry (list 1 1 0)
+	      (get-probability-of-c (make-history-summary hist0
+							  hist1
+							  hist2))))
+(define (could-be-soft-eye-for-eye? h0 h1 h2)
+  (define d (list 0 1 1 0))
+  (define (map-to elt)
+    (set! d (cdr d))
+    (if (null? elt) (car d) elt))
+  (my-test-entry (list 1 1 0)
+	      (map map-to 
+		   (get-probability-of-c (make-history-summary h0
+							       h1
+							       h2)))))
+      
+(is-soft-eye-for-eye? (list "c" "c" "c" "c")
+		      (list "d" "d" "d" "c")
+		      (list "d" "d" "c" "c"))
+(is-soft-eye-for-eye? (list "c" "c" "c" "c" "c")
+		      (list "d" "c" "d" "d" "c")
+		      (list "d" "c" "c" "c" "c"))
+(is-soft-eye-for-eye? (list "c" "c" "d" "d" "c" "d" "c" "c")
+		      (list "c" "c" "c" "d" "d" "c" "d" "c")
+		      (list "c" "c" "d" "d" "d" "c" "c" "c"))
+(is-soft-eye-for-eye? (list "c" "c" "c" "d" "d" "c" "c" "c")
+		      (list "c" "c" "c" "d" "d" "c" "d" "c")
+		      (list "c" "c" "d" "d" "d" "c" "c" "c"))
+
+
+(could-be-soft-eye-for-eye? (list "c" "c" "c" "c")
+			    (list "d" "d" "d" "c")
+			    (list "d" "d" "c" "c"))
+(could-be-soft-eye-for-eye? (list "c" "c" "c" "c" "c")
+			    (list "d" "c" "d" "d" "c")
+			    (list "d" "c" "c" "c" "c"))
+(could-be-soft-eye-for-eye? (list "c" "c" "d" "d" "c" "d" "c" "c")
+			    (list "c" "c" "c" "d" "d" "c" "d" "c")
+			    (list "c" "c" "d" "d" "d" "c" "c" "c"))
+(could-be-soft-eye-for-eye? (list "c" "c" "c" "d" "d" "c" "c" "c")
+			    (list "c" "c" "c" "d" "d" "c" "d" "c")
+			    (list "c" "c" "d" "d" "d" "c" "c" "c"))
+
+
+(define (dont-tolerate-fools my-hist hist1 hist2)
+  (if (< (length my-hist) 10)
+      "c"
+      (if (and (could-he-be-a-fool? hist1 my-hist hist2)
+	       (could-he-be-a-fool? hist2 my-hist hist1))
+	  "d"
+	  "d")))
+(dont-tolerate-fools (list "c" "c" "c" "c")
+		      (list "d" "d" "d" "c")
+		      (list "d" "d" "c" "c"))
+(dont-tolerate-fools (list "c" "c" "c" "d" "c")
+		      (list "d" "c" "d" "d" "c")
+		      (list "d" "c" "c" "c" "c"))
+(dont-tolerate-fools (list "c" "c" "d" "d" "c" "d" "c" "c")
+		      (list "c" "c" "c" "d" "d" "c" "d" "c")
+		      (list "c" "c" "d" "d" "d" "c" "c" "c"))
+(dont-tolerate-fools (list "c" "c" "c" "d" "d" "c" "c" "c" "c" "c")
+		     (list "c" "c" "c" "c" "c" "c" "c" "c" "c" "c")
+		     (list "c" "c" "c" "c" "c" "c" "c" "c" "c" "c"))
