@@ -100,7 +100,9 @@
 
 (define (estimate-pi)
   (define (p x y)
-    (<= (+ (* x x) (* y y)) 1))
+    (<= (+ (* (- x 0.5) (- x 0.5))
+	   (* (- y 0.5) (- y 0.5)))
+	0.25))
   (* 4.0 (estimate-intergal p 0.0 1.0 0.0 1.0 9999)))
 
 ;;; exercise 3.6
