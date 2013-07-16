@@ -75,3 +75,66 @@
 ((acc 'my-passd 'withdraw) 35)    
 ((acc 'my-password 'haha) 23)
 ((acc 'my-password 'deposit) 23)
+
+
+;;; exercise 3.5
+(define (random-in-range low high)
+  (let ((range (- high low)))
+    (+ low (random range))))
+
+(define (monte-carlo trials experiment)
+  (define (iter reminding passed)
+    (if (= 0 reminding)
+	(/ passed trials)
+	(if (experiment)
+	    (iter (- reminding 1) (+ 1 passed))
+	    (iter (- reminding 1)  passed))))
+  (iter trials 0))
+
+(define (estimate-intergal P x1 x2 y1 y2 trials)
+  (define (experiment)
+    (let ((x (random-in-range x1 x2))
+	  (y (random-in-range y1 y2)))
+      (P x y)))
+  (monte-carlo trials experiment))
+
+(define (estimate-pi)
+  (define (p x y)
+    (<= (+ (* x x) (* y y)) 1))
+  (* 4.0 (estimate-intergal p 0.0 1.0 0.0 1.0 9999)))
+
+;;; exercise 3.6
+(define (rand-update x)
+  (remainder (+ 29 (* 17 x)) 31))
+
+(define rand
+  (let ((x 2))
+    (lambda (msg)
+      (cond ((eq? msg 'generate) 
+	     (set! x (rand-update x))
+	     x)
+	    ((eq? msg 'reset)
+	     (lambda (init-value)
+	       (begin (set! x init-value)
+		      (rand 'generate))))
+	    (else (display "what do you want to do?"))))))
+
+(rand 'ww)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+((rand 'reset) 1)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+((rand 'reset) 2)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+((rand 'reset) 1)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+
+
+
