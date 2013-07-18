@@ -1,4 +1,4 @@
-;;; exercise 3.1
+p;;; exercise 3.1
 (define (make-accumulator value)
   (lambda (acc)
     (begin (set! value (+ value acc))
@@ -138,5 +138,40 @@
 (rand 'generate)
 (rand 'generate)
 
+;;; exercise 3.7
+(define (make-account balance password)
+  (define (withdraw amount)
+    (cond ((>= balance amount) (set! balance (- balance amount)) balance)
+	  (else "insufficent balance")))
+  (define (deposit amount)
+    (begin (set! balance (+ amount balance)) balance))
+  (lambda (psd op)
+    (cond ((eq? psd password) 
+	   (cond ((eq? op 'withdraw) withdraw)
+		 ((eq? op 'deposit) deposit)
+		 (else (lambda (amount) "undefined operation"))))
+	  (else (lambda (amount) "uncorrect password")))))
 
 
+(define (make-joint user password new-password)
+  (lambda (psd op)
+    (cond ((eq? psd new-password) (user password op))
+	  (else (error "the password is wrong!")))))
+
+(define acc (make-account 100 'my-password))
+(define new-acc (make-joint acc 'my-password 'new-password))
+((acc 'my-password 'withdraw) 10)
+((new-acc 'my-password 'withdraw) 10)
+((new-acc 'new-password 'withdraw) 10)
+((acc 'my-password 'withdraw) 10)
+
+
+;;; exercise 3.8
+(define f
+  (let ((t #t))
+    (lambda (arg)
+      (begin (set! t (not t))
+	     (if t arg 0)))))
+
+(+ (f 0) (f 1))
+(+ (f 1) (f 0))
