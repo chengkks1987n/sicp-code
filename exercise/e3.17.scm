@@ -73,3 +73,46 @@
 (is-cycle? a)
 
 
+;;; exercise 3.19
+(define (is-cycle? x)
+  (define (iter lst current)
+    (cond ((or (null? lst) (null? current)) false)
+	  ((eq? current x) true)
+	  (else (iter lst (cdr current)))))
+  (iter x (cdr x)))
+
+(define (is-cycle? x)
+  (define (test p1 p2)
+  ;;; - p1 is the first pair, p2 is the second pair
+  ;;; - p1 goes forword one step once while p2 goes forword two steps
+  ;;; - if there is a cycle, after some steps, p2 will "catch" p1, that
+  ;;;   means p1 equal to p2.
+    (cond ((or (null? p1) (null? p2)) false)
+	  ((and (pair? p1) (pair? p2))
+	   (if (eq? p1 p2)
+	       true
+	       (if (pair? (cdr p2))
+		   (test (cdr p1) (cddr p2))
+		   false)))
+	  (else false)))
+  (if (pair? x)
+      (test x (cdr x))
+      false))
+
+;; test case    
+(define a (list 'a 'b 'c))
+(is-cycle? a)
+(set-cdr! (cddr a) a)
+(is-cycle? a)
+
+(define b (list 1 2 3 4))
+(is-cycle? b)
+(set-cdr! (cdddr b) (cddr b))
+(is-cycle? b)
+
+
+;;; exercise 3.20
+(define x (cons 1 2))
+(define z (cons x x))
+(set-car! (cdr z) 17)
+(car x)
