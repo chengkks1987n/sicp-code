@@ -76,3 +76,4 @@
 ;; then set a2 to 0, add action (set-sign! output (and a1(1) a2(0)))
 ;; last in,first out will get answer 1.
 
+  
