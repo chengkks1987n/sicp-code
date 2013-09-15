@@ -44,9 +44,10 @@
     (define (propagate)
       (if (empty-agenda?)
 	  (begin (set! current-time 0)
-		 'done)
+		 'done-propagate)
 	  (let ((action-queue (pop-next-action-queue!)))
-	    (call-action-queue action-queue))))	    
+	    (begin (call-action-queue action-queue)
+		   (propagate)))))
       
     (define (dispach m)
       (cond ((eq? m 'add-agenda-action!) add-agenda-action!)
@@ -97,10 +98,7 @@
 		 (lambda ()
 		   (set-sign! output (logical-not (get-sign a))))))
   (add-action! a not-gate-proc)
-n  'ok)
-
-;;; half-adder and full-adder
-;;<TODO:>
+  'ok)
 
 ;;; wire
 (define (make-wire)
@@ -128,6 +126,16 @@ n  'ok)
 (define (set-sign! wire new-value) ((wire 'set-sign!) new-value))
 (define (add-action! wire action-proc) ((wire 'add-action!) action-proc))
 
+;;; half-adder and full-adder
+(define (half-adder a b s c)
+  (let ((d (make-wire))
+	(e (make-wire)))
+    (and-gate a b c)
+    (or-gate a b d)
+    (not-gate c e)
+    (and-gate d e s)
+    'ok))
+
 ;;; example
 (define (probe name wire)
   (add-action! wire 
@@ -150,8 +158,14 @@ n  'ok)
 (probe 'c c)
 (probe 'output output)
 
+;(and-gate a b output)
+;(or-gate a b c)
 (set-sign! a 1)
 
-(and-gate a b output)
-(or-gate a b c)
+(propagate)
+
+(half-adder a b output c)
+(propagate)
+
+(set-sign! b 1)
 (propagate)
