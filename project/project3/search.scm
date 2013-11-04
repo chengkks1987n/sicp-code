@@ -624,9 +624,6 @@
 (search-all the-web 'http://sicp.csail.mit.edu/ 'help)
 (search-all the-web 'http://sicp.csail.mit.edu/ 'collaborative)
 
-
-
-
 ;;------------------------------------------------------------
 ;; utility for timing procedure calls.
 ;; returns the time in seconds
@@ -639,3 +636,36 @@
       (display (- (runtime) start))
       val)))
 
+;;; computer exercise 7
+(load "generate.scm")
+
+(define random-web (generate-random-web 100))
+
+(timed search-any random-web '*start* 'help)
+;=> time expended: 9.999999999999787e-3
+(timed search-any random-web '*start* 'Susanhockfield)
+;=> time expended: 1.3600000000000003
+
+(timed search-all random-web '*start* 'help)
+;=> time expended: 1.4100000000000001
+(timed search-any random-web '*start* 'Susanhockfield)
+;=> time expended: 1.3800000000000026
+
+(define random-web-index (make-web-index random-web '*start*))
+(timed make-web-index random-web '*start*)
+;=> time expended: 1.7400000000000002
+(timed random-web-index 'help)
+;=> time expended: 0.
+(timed random-web-index 'Susanhockfield)
+;=> time expended: 0.
+
+
+;;; conclusion
+; index-search spend lots of time on make the whole index,
+; but it spends only a little time on search.
+; if the web is static(dont change very much), its a better choice.
+;
+; the dynamic-seatch spends shorter time when you search only one target
+; and the target is in  front of the web. if the target is at the last of 
+; the web or it is not in the web, all the dynamic-search spend the same time. 
+;
