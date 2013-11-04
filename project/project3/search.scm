@@ -1,4 +1,4 @@
-;;; SEARCH.SCM
+
 ;;; MIT 6.001                               Spring, 2005
 ;;; PROJECT 3
 
@@ -382,25 +382,138 @@
 ;; The real definition of THE-WEB we'll use is in another file, 
 ;; including all of the words in the documents.
 
-(define the-web
-  (list
-   (make-graph-element
-    'http://sicp.csail.mit.edu/
-    '(http://sicp.csail.mit.edu/SchemeImplementations/
-      http://sicp.csail.mit.edu/projects/)
-    '(... words extracted from http://sicp.csail.mit.edu/ ...))
-   (make-graph-element
-    'http://sicp.csail.mit.edu/projects/
-    '(http://sicp.csail.mit.edu/collaborative-work.html
-      http://sicp.csail.mit.edu/getting-help.html)
-    '(... words extracted from http://sicp.csail.mit.edu/SchemeImplementations/ ...))
-   (make-graph-element
-    'http://sicp.csail.mit.edu/getting-help.html
-    '(http://sicp.csail.mit.edu/
-      http://sicp.csail.mit.edu/SchemeImplementations/)
-    '(... words extracted from http://sicp.csail.mit.edu/getting-help.html))
-   ))
+(define (2sym x)
+  (cond ((symbol? x) x)
+	((string? x) (string->symbol x))
+	((number? x) (string->symbol (number->string x)))
+	(else (error x))))
 
+(define the-web
+  (make-graph (list
+    (make-graph-element 
+     'http://sicp.csail.mit.edu/
+     '(http://sicp.csail.mit.edu/SchemeImplementations
+       http://sicp.csail.mit.edu/psets)
+     (map 2sym '(18:30:02 2004 6001-WEBMASTER@CSAIL.MIT.EDU 8 
+			  ABOUT ALL AM AND ANNOUNCEMENTS ANSWERS ARE ASSIGNMENT 
+			  ASSIGNMENTS BY CALENDAR CAN CHANGE COLLABORATIVE 
+			  COMMENTS COMPUTER COPYRIGHT CURRENT DO DOCUMENTATION 
+			  EDT FALL FIND FOR GENERAL GET GETTING GUIDELINES HELP
+			  HOW I IN INDIVIDUAL INFORMATION INSTITUTE INTERPRETATION 
+			  IS LAST LECTURE MASSACHUSETTS ME MICROQUIZZES MODIFIED 
+			  MY NEW NOTES OCT OF ON ON-LINE ORAL OWN PAST POLICY 
+			  POSTED PRESENTATIONS PREVIOUS PROBLEM PROGRAMS 
+			  RECITATION RECITATIONS RECORDS RESERVED RIGHTS SCHEME 
+			  SECTION SECTIONS SEND SET SETS SITE SOFTWARE STAFF
+			  STRUCTURE SUBJECT TECHNOLOGY TELL TERMS THE THIS THU TO
+			  UP USE WEEK WHAT WHERE WHICH WORK WRITING)))
+    (make-graph-element
+     'http://sicp.csail.mit.edu/SchemeImplementations
+     '(http://sicp.csail.mit.edu/getting-help.html
+       http://sicp.csail.mit.edu/lab-use.html
+       *the-goal*)
+     (map 2sym '(11:09 2004 3.1 34-501 4.0 6.001 6001-WEBMASTER@CSAIL.MIT.EDU 
+            7 7.5A 95 98 A ABOUT ACCESS ADDITION ALL ALSO AN AND ANY 
+            ARE ASSIGNMENTS ASSISTANTS AT ATHENA AVAILABLE BASED BE 
+            BEAR BEAUTY BECAUSE BEEN BEFORE BETWEEN BUT BY CAN 
+            CAPABLE CERTAIN COME COMFORT COMMENTS CONVENIENT COPY 
+            COPYRIGHT COURSE CROWDED DEBUGGER DISK DISTRIBUTIONS
+            DO DOCUMENTATION DONE DRSCHEME DUE EDITOR EDSCHEME EITHER
+            ENJOY ETC EXTENSIONS FEBRUARY FEE FEEL FELLOW FILES FIND 
+            FLOPPY FOLLOWING FOR FREE FROM GET GNU GRANT HAS HAVE HELP
+            HERE HOME IDENTICAL IF IMPLEMENTATIONS IN INC INCLUDED 
+            INCLUDING INSTALL INSTITUTE IS IT JUST LAB LAST LIKE LINUX 
+            LOCKER LOT MAC MACHINE MASSACHUSETTS MAY MIND MODIFIED MUST 
+            NEED NEWER NOT NOTE NT OBTAINED OF OFTEN OLDER ON OPTIONS 
+            OR OTHER OUT OWN PAGE PARTIALLY PC PERHAPS PLATFORMS PLEASE 
+            PM PREPARED PREVIOUS PREVIOUSLY PROBLEM PROGRESS REALIZE 
+            REPRODUCE REQUIRES RESERVED RETURN RICE RIGHTS ROOM ROOT 
+            RUN RUNNING SAVE SCENIC SCHEME SCHEMERS SEE SEMESTERS SEND 
+            SETS SEVERAL SHOULD SINCE SITE SMALL SOMEONE SPRING STAFF 
+            STUDENTS SUGGEST SUPPORTED SYSTEM SYSTEMS TECHNOLOGY TESTED 
+            THAN THAT THE THEM THERE THESE THIS TIME TO TOOK TRANSFERRING
+            TRY UNIVERSITY UNIX UNSUPPORTED UPDATE USE USED USING VERSION
+            VERSIONS VERSON VERY VIRTUALLY WAIVERS WANT WARNED WE WEB 
+            WHERE WHO WILL WINDOWS WITH WORK WORKSTATIONS WOULD YOU YOUR)))
+    (make-graph-element
+     'http://sicp.csail.mit.edu/psets
+     '()
+     (map 2sym '(0 1 15 2004 2 20 23:32:29 28 3 4 5 6.001
+        6001-WEBMASTER@CSAIL.MIT.EDU 98 A ABOUT ALL ALSO AND ARE AS 
+        ASSIGNMENTS ATHENA AVAILABLE BETWEEN BOTH BY CAN COLLABORATIVE 
+        COMMENTS COPYRIGHT DISTRIBUTED EDT FALL FILES FOR FORMAT GET 
+        GHOSTVIEW HELP HERE HOME HOW HTML I IN INSTITUTE IS LAB LAST 
+        LECTURE LOCKER MASSACHUSETTS MODIFIED MY OCT OF ON PAGE POLICY 
+        POSTED POSTSCRIPT PRINTING PROBLEM REQUIRES RESERVED RETURN 
+        RIGHTS SCREEN SEND SEPT SET SETS SHOULD SITE SOLUTIONS SUCH 
+        TECHNOLOGY THE THEY THIS THU TO TRANSFER TUESDAYS UP VIEWER
+        VIEWING WEB WHAT WHERE WHICH WITH WORK WRITE)))
+    (make-graph-element
+     'http://sicp.csail.mit.edu/getting-help.html
+     '(http://sicp.csail.mit.edu/
+       http://sicp.csail.mit.edu/SchemeImplementations)
+     (map 2sym '(09:38:18 1 10 2004 2 23 24 339-0052 4 5 6 6.001 6001-HELP@MIT.EDU
+               6001-WEBMASTER@CSAIL.MIT.EDU 8 947-2394 98 A ABLE ABOUT 
+               ADJUSTING ADMINISTRATIVE ADVANTAGE ALL ALSO AM AN AND 
+               ANY ARE AS ASSISTANTS AT ATTENTION BE BEEPER BEING BROUGHT
+               BY CAN CANNOT CELL COMMENTS COMPUTER COPYRIGHT COURSE 
+               CURRENTLY DAY DEMAND DISCUSSION DOES DONE DURING DUTY
+               EARLY EDT EDUCATION EMAIL FALL FEEL FOLLOWS FOR FORUM 
+               FRIDAY GET GETTING GRIPE HAS HAVE HELP HERE HOME HOMEWORK
+               HOURS HOW IF IN INFORMATION INSTALL INSTITUTE INSTRUCTOR 
+               IS IT LAB LAST LECTURERS LINE LOST MASSACHUSETTS MIDNIGHT
+               MIDNITE MIGHT MINORITY MODIFIED MONDAY NATURE NEED NIGHT
+               NOT OF OFFICE ON OPEN OPERATES OR OTHER PAGE PERSONAL 
+               PHONE PHONING PLEASE PM PROBLEM PROBLEMS PROGRAM REACH
+               RECITATION REQUEST RESERVED RESPONSE REST RETURN RIGHTS 
+               SATURDAY SCHEME SCREAMS SECRETARY SEE SEMESTER SEND SEP
+               SET SETUP SHOULD SITE SOME SPECIFIC STAFFED STAFFING 
+               START STATEMENT STUDENT SUNDAY TECHNOLOGY THAT THE THESE
+               THINGS THIS THURSDAY TO TOUCH TRY TUESDAY TUTOR TUTORING
+               UNDERSTAND UNTIL WAIT WAY WE WED WEDNESDAY WHICH WILL
+               WITH YOU YOUR)))
+    (make-graph-element
+     'http://sicp.csail.mit.edu/lab-use.html
+     '()
+     (map 2sym '(1 2004 2 24 34-501 4:33 6.001 6001-WEBMASTER@CSAIL.MIT.EDU 7 8 A
+        ABLE ABOUT ACCESSIBLE ADDITIONAL AFTER ALL ALLOWING ALSO AM AN 
+        AND ANY APPRECIATED ARE ARRANGED AS ASSISTANT AT BE BETWEEN 
+        BOSTON BROUGHT BY CAB CAMPUS CAREFUL CAUTION CLASSES CLEAN CODE
+        COMMENTS COMMON COMPONENTS CONSIDER CONSIDERATION CONTACT 
+        COOPERATION COPYRIGHT CORRIDOR DAY DAYS DETAILS DO DOING
+        DOORS DRINK DURING EDWIN ESCORT ESPECIALLY EXERCISE EXPERIMENT 
+        EXTEND FEBRUARY FOLLOWING FOOD FOR FRATS FUTURE GETTING GO 
+        GREATLY HAVE HERE HOME HOURS HOWEVER IF IN INFORMATION INNER 
+        INSTITUTE INSTRUMENT INTO IS ISSUES KEYBOARDS LAB LABORATORY 
+        LAST LATE LEADING LIVE LOOK MACHINES MANUAL MASSACHUSETTS
+        MIDNIGHT MODIFIED MUST NEAR NEED NIGHT NOT NOTE OF OFF ON ONE 
+        OPEN OPERATION OTHER OUT OUTER PAGE PANIC PAST PATROL PERSONAL
+        PLEASE PM POLICY PROBLEM PROVIDED REMEMBER RESERVED
+        RESPONSIBILITY RETURN RETURNING RIDE RIGHTS RIVER ROOM SAFE
+        SAFETY SCHEME SECOND SEE SEND SENSE SET SHOW SIDE SITE SMOOTHLY
+        SO SPELLED STAFFED STARTED SUCH TAKING TECHNOLOGY TERM THAT 
+        THE THEM THINGS THIS TIME TO UP USE USING WE WEEK WILL WITH 
+        WORKING YOU YOUR YOURSELF ))))))
+
+;;(define the-web
+;;  (list
+;;   (make-graph-element
+;;    'http://sicp.csail.mit.edu/
+;;    '(http://sicp.csail.mit.edu/SchemeImplementations/
+;;      http://sicp.csail.mit.edu/projects/)
+;;    '(... words extracted from http://sicp.csail.mit.edu/ ...))
+;;   (make-graph-element
+;;    'http://sicp.csail.mit.edu/projects/
+;;    '(http://sicp.csail.mit.edu/collaborative-work.html
+;;      http://sicp.csail.mit.edu/getting-help.html)
+;;    '(... words extracted from http://sicp.csail.mit.edu/SchemeImplementations/ ...))
+;;   (make-graph-element
+;;    'http://sicp.csail.mit.edu/getting-help.html
+;;    '(http://sicp.csail.mit.edu/
+;;      http://sicp.csail.mit.edu/SchemeImplementations/)
+;;    '(... words extracted from http://sicp.csail.mit.edu/getting-help.html))
+;;   ))
+;;
 
 ;;--------------------
 ;; Searching the Web
@@ -476,6 +589,42 @@
 (find-documents 'collaborative)
 
 ;;; computer exercise 6
+(define (search-any web start-node word)
+  (let ((ans '()))
+    (define (goal? node)
+      (let ((node-index (make-index)))
+	(add-document-to-index! node-index web node)
+	(if (not (null? (find-in-index node-index word)))
+	    (begin (set! ans node)
+		   #t)
+	    #f)))
+    (bfs start-node goal? web)
+    ans))
+
+(search-any the-web 'http://sicp.csail.mit.edu/ 'help)
+(search-any the-web 'http://sicp.csail.mit.edu/lab-use.html 'help)
+(search-any the-web 'http://sicp.csail.mit.edu/ 'collaborative)
+(search-any the-web 'http://sicp.csail.mit.edu/psets 'collaborative)
+
+(define (search-all web start-node word)
+  (let ((ans '()))
+    (define (goal? node)
+      (define node-index (make-index))
+      (add-document-to-index! node-index web node)
+      (if (not (null? (find-in-index node-index word)))
+	  (begin (set! ans (cons node ans))
+;		 (display (find-in-index node-index word))
+;		 (newline)
+		 #f)
+	  #f))
+
+    (bfs start-node goal? web)
+    ans))
+
+(search-all the-web 'http://sicp.csail.mit.edu/ 'help)
+(search-all the-web 'http://sicp.csail.mit.edu/ 'collaborative)
+
+
 
 
 ;;------------------------------------------------------------
