@@ -352,6 +352,7 @@
  
  (find-in-index test-index 'key1)
  (find-in-index test-index 'key2)
+ (find-in-index test-index 'key)
 
 
 ;;------------------------------------------------------------
@@ -639,7 +640,7 @@
 ;;; computer exercise 7
 (load "generate.scm")
 
-(define random-web (generate-random-web 100))
+(define random-web (generate-random-web 200))
 
 (timed search-any random-web '*start* 'help)
 ;=> time expended: 9.999999999999787e-3
@@ -669,3 +670,73 @@
 ; and the target is in  front of the web. if the target is at the last of 
 ; the web or it is not in the web, all the dynamic-search spend the same time. 
 ;
+
+;;; computer exercise 8
+(define (optimized-index ind)
+  (define (compare-key e1 e2)
+    (symbol<? (car e1) (car e2)))
+    
+  (if (not (index? ind))
+      (error "the arg is not an index: " ind)
+      (let ((v (list->vector (cdr ind))))
+	(sort! v compare-key)
+	(cons 'optimized-index v))))
+
+(define (optimized-index? optind)
+  (and (pair? optind) (eq? (car optind) 'optimized-index)))
+
+(define opt-ind (optimized-index test-index))
+
+;;; problem 9
+(define (find-entry-in-optimized-index optind key)
+  (if (not (optimized-index? optind))
+      (error "the first arg is not optimized-index: " optind key)
+      (vector-binary-search (cdr optind) symbol<? car key)))
+
+(find-entry-in-optimized-index opt-ind 'key1)
+(find-entry-in-optimized-index opt-ind 'key2)
+(find-entry-in-optimized-index opt-ind 'key)
+
+(define (find-in-optimized-index optind key)
+  (let ((e (find-entry-in-optimized-index optind key)))
+    (if e
+	(cadr e)
+	'())))
+
+(find-in-optimized-index opt-ind 'key)
+(find-in-optimized-index opt-ind 'key1)
+(find-in-optimized-index opt-ind 'key2)
+
+;;
+(define (make-optimized-web-index web init-url)
+  (let ((index (make-index)))
+    (define (goal? url)
+      (add-document-to-index! index web url)
+      #f)
+    (bfs init-url goal? web) ; add all documents to index, start from init-url
+    (let ((opt-ind (optimized-index index)))
+      (lambda (word)
+	(find-in-optimized-index opt-ind word)))))
+
+(define find-optimized-documents (make-optimized-web-index random-web '*start*))
+(timed make-optimized-web-index random-web '*start*)
+(timed find-optimized-documents 'help) 
+;=> time expended: 0.
+(timed find-optimized-documents 'Sunsanhockfield) 
+;=> time expended: 0.
+
+
+;; repeat running procedure (f args) for count times
+(define (repeat count f . args)
+  (if (> count 0)
+      (begin (apply f args)
+	     (apply repeat (- count 1) f args))
+      (apply f args)))
+
+(timed repeat 999 find-optimized-documents 'Sunsanhockfield)
+;=> time expended: .01999999999999602
+(timed repeat 999 random-web-index 'Sunsanhockfield)
+;=> time expended: .03999999999999915
+
+  
+
