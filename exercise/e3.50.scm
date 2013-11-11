@@ -411,3 +411,11 @@
 ;Invalid floating-point operation
 
 
+;;; exercise 3.66
+; the location of pair (i,j) is:
+;  2^i - 1 + 2^(i-1) + (2^i)*(j-i-1) , (j>i);
+;  2^i - 1 , (j=i)
+
+; (1,100) -> 198
+
+
