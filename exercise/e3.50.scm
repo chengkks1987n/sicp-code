@@ -407,7 +407,7 @@
 ;Value: (1. .7 .6932773109243697 .6931488693329254 .6931471960735491 .6931471806635636 .6931471805604039 .6931471805599445 .6931471805599427)
 ; log 2 is between (.6931471805599445 .6931471805599427)
 
-(stream-head acc-log2 10)
+;(stream-head acc-log2 10)
 ;Invalid floating-point operation
 
 
@@ -419,3 +419,75 @@
 ; (1,100) -> 198
 
 
+;;; exercise 3.67
+(define (interleave s1 s2)
+  (cond ((stream-null? s1) s2)
+	(else (cons-stream (stream-car s1) 
+			   (interleave s2 (stream-cdr s1))))))
+
+(define x (interleave ones integers))
+(stream-head x 20)
+;Value: (1 1 1 2 1 3 1 4 1 5 1 6 1 7 1 8 1 9 1 10)
+
+;; produce all pairs of integers(i,j) without the condition i<=j
+(define (all-pairs s1 s2)
+  (cons-stream (list (stream-car s1) (stream-car s2))
+	       (interleave (interleave 
+			    (stream-map (lambda (x) 
+					  (list (stream-car s1) x))
+					(stream-cdr s2))
+			    (stream-map (lambda (x)
+					  (list x (stream-car s2)))
+					(stream-cdr s1)))
+			   (pairs (stream-cdr s1) (stream-cdr s2)))))
+
+(define x (all-pairs integers integers))
+(stream-head x 20)
+;Value: ((1 1) (1 2) (2 2) (2 1) (2 3) (1 3) (3 3) (3 1) (3 2) (1 4) (3 4) (4 1) (2 4) (1 5) (4 4) (5 1) (4 2) (1 6) (4 3) (6 1))
+
+
+;;; exercise 3.68
+; this will not work. it is an infinite loop. 
+; in the body of procedure pairs, the second argument for procedure interleave
+; will be substituted by procedure pairs, it is a recursion, not delayed.
+
+
+;;; exercise 3.69
+(define (pairs s1 s2)
+  (cons-stream (list (stream-car s1) (stream-car s2))
+	       (interleave (stream-map 
+			    (lambda (x) 
+			      (list (stream-car s1) x))
+			    (stream-cdr s2))
+			   (pairs (stream-cdr s1) (stream-cdr s2)))))
+(define x (pairs integers integers))
+(stream-head x 20)
+;Value: ((1 1) (1 2) (2 2) (1 3) (2 3) (1 4) (3 3) (1 5) (2 4) (1 6) (3 4) (1 7) (2 5) (1 8) (4 4) (1 9) (2 6) (1 10) (3 5) (1 11))
+
+(define (triples s1 s2 s3)
+  (define x (stream-map 
+	     (lambda (x)
+	       (cons (stream-car s1) x))
+	     (pairs s2 s3)))
+  (cons-stream (stream-car x)
+	       (interleave (stream-cdr x)
+			   (triples (stream-cdr s1)
+				    (stream-cdr s2)
+				    (stream-cdr s3)))))
+(define x (triples integers integers integers))
+(stream-head x 20)
+;Value: ((1 1 1) (1 1 2) (2 2 2) (1 2 2) (2 2 3) (1 1 3) (3 3 3) (1 2 3) (2 3 3) (1 1 4) (3 3 4) (1 3 3) (2 2 4) (1 1 5) (4 4 4) (1 2 4) (2 3 4) (1 1 6) (3 4 4) (1 3 4))
+
+(define (pythagorean? x)
+  (= (square (caddr x))
+     (+ (square (cadr x))
+	(square (car x)))))
+(pythagorean? (list 1 2 3))
+;Value: #f
+(pythagorean? (list 3 4 5))
+;Value: #t
+
+(define pythagorean (stream-filter pythagorean? x))
+
+(stream-head pythagorean 4)
+;Value : ((3 4 5) (6 8 10) (5 12 13) (9 12 15))
