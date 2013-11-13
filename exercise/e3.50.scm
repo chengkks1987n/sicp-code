@@ -132,3 +132,72 @@
 ;210
 ;;Unspecified return value
 
+;;; exercise 3.53
+(define (add-stream s1 s2)
+  (cons-stream (+ (stream-car s1) (stream-car s2))
+	       (add-stream (stream-cdr s1) (stream-cdr s2))))
+
+(define s (cons-stream 1 (add-stream s s)))
+; 1 2 4 8 16 32 64 128 256 ......
+
+;test
+(define (show upper)
+  (define (iter n)
+    (if (< n upper)
+	(begin (display (stream-ref s n))
+	       (display " ")
+	       (iter (+ 1 n)))))
+  (iter 0))
+(show 10)
+;1 ]=> 1 2 4 8 16 32 64 128 256 512 
+
+;;; exercise 3.54
+(define (mul-stream s1 s2)
+  (stream-map * s1 s2))
+
+(define ones (cons-stream 1 ones))
+(stream-head ones 20)
+;Value : (1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1)
+
+(define integers (cons-stream 1 (add-stream ones integers)))
+(stream-head integers 20)
+;Value : (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20)
+
+(define factorials (cons-stream 1 (mul-stream factorials (stream-cdr integers))))
+(stream-head factorials 10)
+;Value : (1 2 6 24 120 720 5040 40320 362880 3628800)
+
+;;; exercise 3.55
+(define (partial-sums s)
+  (cons-stream (stream-car s)
+	       (add-stream (stream-cdr s) (partial-sums s))))
+(define k (partial-sums integers))
+(stream-head k 10)
+;Value : (1 3 6 10 15 21 28 36 45 55)
+
+;;; exercise 3.56
+(define (scale-stream s factor)
+  (stream-map (lambda (x) (* x factor)) s))
+
+(define (merge s1 s2)
+  (cond ((stream-null? s1) s2)
+	((stream-null? s2) s1)
+	(else (let ((c1 (stream-car s1))
+		    (c2 (stream-car s2)))
+		(cond ((< c1 c2) 
+		       (cons-stream c1 (merge (stream-cdr s1) s2)))
+		      ((< c2 c1)
+		       (cons-stream c2 (merge (stream-cdr s2) s1)))
+		      (else 
+		       (cons-stream c1 (merge (stream-cdr s1) 
+					      (stream-cdr s2)))))))))
+
+(define s (cons-stream 1 (merge (merge (scale-stream s 2)
+				       (scale-stream s 3))
+				(scale-stream s 5))))
+(stream-head s 20)
+;Value : (1 2 3 4 5 6 8 9 10 12 15 16 18 20 24 25 27 30 32 36)
+
+;;; exercise 3.57
+
+
