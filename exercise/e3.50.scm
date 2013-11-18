@@ -326,3 +326,88 @@
 (stream-head tangent-series 10)
 
 ;; you can test sin(2x)/cos(x) equal to 2sin(x) or other things.
+
+;;; exercise 3.63
+;<TODO>
+
+;;; exercise 3.64
+(define (average  a b)
+  (/ (+ a b) 2.0))
+(average 2 4)
+;Value: 3.
+
+(define (sqrt-improve guess x)
+  (average guess (/ x guess)))
+(sqrt-improve 1 2)
+;Value: 1.5
+
+(define (sqrt-stream x)
+  (define g
+    (cons-stream 1.0 (stream-map (lambda (gs)
+				   (sqrt-improve gs x))
+				 g)))
+  g)
+(stream-head (sqrt-stream 2) 10)
+;Value 33: (1. 1.5 1.4166666666666665 1.4142156862745097 1.4142135623746899 1.414213562373095 1.414213562373095 1.414213562373095 1.414213562373095 1.414213562373095)
+
+(define (stream-limit s tolerance)
+  (let ((d1 (stream-ref s 0))
+	(d2 (stream-ref s 1)))
+    (if (< (abs (- d1 d2)) tolerance)
+	d2
+	(stream-limit (stream-cdr s) tolerance))))
+(stream-limit (sqrt-stream 2) 0.01)
+;Value: 1.4142156862745097
+(stream-limit (sqrt-stream 2) 0.001)
+;Value: 1.4142135623746899
+
+(define (sqrt x tolerance)
+  (stream-limit (sqrt-stream x) tolerance))
+(sqrt 2 0.01)
+;Value: 1.4142156862745097
+(sqrt 2 0.001)
+;Value: 1.4142135623746899
+
+;;; exercise 3.65
+(log 2)
+;Value: .6931471805599453
+
+(define (log2-summands n)
+  (cons-stream (/ 1.0 n)
+	       (stream-map - (log2-summands (+ 1 n)))))
+(stream-head (log2-summands 1) 10)
+;Value: (1. -.5 .3333333333333333 -.25 .2 -.16666666666666666 .14285714285714285 -.125 .1111111111111111 -.1)
+
+(define log2 (partial-sums (log2-summands 1)))
+(stream-head log2 10)
+;Value : (1. .5 .8333333333333333 .5833333333333333 .7833333333333332 .6166666666666666 .7595238095238095 .6345238095238095 .7456349206349207 .6456349206349207)
+; log 2 is between (.7456349206349207 .6456349206349207)
+
+(define (euler-tansform s)
+  (let ((s0 (stream-ref s 0))
+	(s1 (stream-ref s 1))
+	(s2 (stream-ref s 2)))
+    (cons-stream (- s2 (/ (square (- s2 s1))
+			  (+ s2 (* -2 s1) s0)))
+		 (euler-tansform (stream-cdr s)))))
+
+(define euler-log2 (euler-tansform log2))
+(stream-head euler-log2 10)
+;Value: (.7 .6904761904761905 .6944444444444444 .6924242424242424 .6935897435897436 .6928571428571428 .6933473389355742 .6930033416875522 .6932539682539683 .6930657506744464)
+;  log 2 is between (.6932539682539683 .6930657506744464)
+
+(define (make-tableau transform s)
+  (cons-stream s (make-tableau transform (transform s))))
+
+(define (accelerated-sequence transform s)
+  (stream-map stream-car (make-tableau transform s)))
+
+(define acc-log2 (accelerated-sequence euler-tansform log2))
+(stream-head acc-log2 9)
+;Value: (1. .7 .6932773109243697 .6931488693329254 .6931471960735491 .6931471806635636 .6931471805604039 .6931471805599445 .6931471805599427)
+; log 2 is between (.6931471805599445 .6931471805599427)
+
+(stream-head acc-log2 10)
+;Invalid floating-point operation
+
+
