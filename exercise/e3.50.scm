@@ -429,6 +429,17 @@
 (stream-head x 20)
 ;Value: (1 1 1 2 1 3 1 4 1 5 1 6 1 7 1 8 1 9 1 10)
 
+(define (pairs s1 s2)
+  (cons-stream (list (stream-car s1) (stream-car s2))
+	       (interleave (stream-map 
+			    (lambda (x) 
+			      (list (stream-car s1) x))
+			    (stream-cdr s2))
+			   (pairs (stream-cdr s1) (stream-cdr s2)))))
+(define x (pairs integers integers))
+(stream-head x 20)
+;Value: ((1 1) (1 2) (2 2) (1 3) (2 3) (1 4) (3 3) (1 5) (2 4) (1 6) (3 4) (1 7) (2 5) (1 8) (4 4) (1 9) (2 6) (1 10) (3 5) (1 11))
+
 ;; produce all pairs of integers(i,j) without the condition i<=j
 (define (all-pairs s1 s2)
   (cons-stream (list (stream-car s1) (stream-car s2))
@@ -453,16 +464,6 @@
 
 
 ;;; exercise 3.69
-(define (pairs s1 s2)
-  (cons-stream (list (stream-car s1) (stream-car s2))
-	       (interleave (stream-map 
-			    (lambda (x) 
-			      (list (stream-car s1) x))
-			    (stream-cdr s2))
-			   (pairs (stream-cdr s1) (stream-cdr s2)))))
-(define x (pairs integers integers))
-(stream-head x 20)
-;Value: ((1 1) (1 2) (2 2) (1 3) (2 3) (1 4) (3 3) (1 5) (2 4) (1 6) (3 4) (1 7) (2 5) (1 8) (4 4) (1 9) (2 6) (1 10) (3 5) (1 11))
 
 (define (triples s1 s2 s3)
   (define x (stream-map 
