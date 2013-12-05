@@ -60,9 +60,9 @@
 (define (make-smooth-zero-crossings input-stream last-value last-avg)
   (let ((avpt (/ (+ (stream-car input-stream) last-value) 2)))
     (cons-stream (sign-change-detector avpt last-avg)
-                 (make-zero-crossings (stream-cdr input-stream)
-				      (stream-car input-stream)
-                                      avpt))))
+                 (make-smooth-zero-crossings (stream-cdr input-stream)
+					     (stream-car input-stream)
+					     avpt))))
 (define smooth-zero-crossings
   (make-smooth-zero-crossings sinx 0 0))
 (stream-head smooth-zero-crossings 10)
