@@ -53,7 +53,8 @@
      (make-methods
       'THINGS      (lambda () things)
       'HAVE-THING? (lambda (thing)
-		     (not (null? (memq thing things))))
+		     ;(not (null? (memq thing things)))) 
+		     (memq thing things)) ;if cannt find, memq return #f, rahter than empty list.
       'ADD-THING   (lambda (thing)
 		     (if (not (ask self 'HAVE-THING? thing))
 			 (set! things (cons thing things)))
@@ -447,7 +448,8 @@
 ;; spell
 ;;
 (define (create-spell name location incant action)
-  (create-instance spell name location incant action))
+ (create-instance spell name location incant action))
+
 
 (define (spell self name location incant action)
   (let ((mobile-part (mobile-thing self name location)))

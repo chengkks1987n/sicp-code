@@ -157,6 +157,9 @@
 ; We "ask" an object to invoke a named method on some arguments.
 ;
 (define (ask object message . args)
+  (if (not (instance-handler? (list object)))
+      (error "in -ask:"  object message args))
+
   ;; See your Scheme manual to explain `. args' usage
   ;; which enables an arbitrary number of args to ask.
   (let ((method (get-method message object)))
@@ -173,6 +176,9 @@
 ; be used in extraordinary circumstances (like error handling).
 ;
 (define (safe-ask default-value obj msg . args)
+  (if (not (instance-handler? (list obj)))
+      (error "in safe-ask:" default-value obj msg args))
+
   (let ((method (get-method msg obj)))
     (if (method? method)
         (apply ask obj msg args)
@@ -189,6 +195,8 @@
 ; based on the order of the objects.
 ;
 (define (get-method message . objects)
+  (if (not (instance-handler? objects)) 
+      (error "in get-method:" message objects))
   (find-method-from-handler-list message (map ->handler objects)))
 
 (define (find-method-from-handler-list message objects)
@@ -319,6 +327,8 @@
       (lambda (obj cb-name)
 	(set! callbacks 
 	      (filter (lambda (x) 
+			(if (instance-handler? (list x)) '()
+			    (error "clock -remove_cb" x))
 			(cond ((and (eq? (ask x 'NAME) cb-name)
 				    (eq? (ask x 'OBJECT) obj))
 			       (set! removed-callbacks
@@ -345,6 +355,8 @@
 ;; action at every tick of the clock.
 
 (define (clock-callback self name object msg . data)
+  (if (instance-handler? object) '()
+      (error "clock-cb:" 
   (let ((root-part (root-object self)))
     (make-handler
      'clock-callback
