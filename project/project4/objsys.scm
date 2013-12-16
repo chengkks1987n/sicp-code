@@ -355,8 +355,8 @@
 ;; action at every tick of the clock.
 
 (define (clock-callback self name object msg . data)
-  (if (instance-handler? object) '()
-      (error "clock-cb:" 
+  (if (instance-handler? (list object)) '()
+      (error "clock-cb:" name object msg data))
   (let ((root-part (root-object self)))
     (make-handler
      'clock-callback

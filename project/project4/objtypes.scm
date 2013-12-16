@@ -217,6 +217,17 @@
     (make-handler
      'person
      (make-methods
+      ;; computer exercise 2
+      'HAS-A (lambda (type);; ck! add by ck.
+	       (filter (lambda (thing)
+			 (memq type (ask thing  'type)))
+		       (ask self 'THINGS)))
+      ;; computer exercise 2
+      'HAS-A-THING-NAMED
+      (lambda (name) ;; ck! add by ck
+	(filter (lambda (thing)
+		  (eq? name (ask thing 'NAME)))
+		(ask self 'THINGS)))
       'STRENGTH (lambda () strength)
       'HEALTH (lambda () health)
       'SAY
@@ -428,7 +439,7 @@
       (lambda ()
 	(if (= (random hunger) 0)
 	    (let ((people (ask self 'PEOPLE-AROUND)))
-	      (if people
+	      (if (not (null? people))  ;; ck! fix bug: when people is null, it will be treated as #t.
 		  (let ((victim (pick-random people)))
 		    (ask self 'EMIT
 			 (list (ask self 'NAME) "takes a bite out of"
@@ -485,6 +496,17 @@
     (make-handler
      'avatar
      (make-methods
+      ;;; computer exercise 3
+      'FEEL-THE-FORCE ;; ck! add by ck.
+      (lambda ()
+	(for-each (lambda (person)
+		  (if (not (eq? person self)) ;;ck!  without the if, me will show up.
+			(ask screen 'TELL-WORLD
+			     (list (ask person 'name)
+				   "at" 
+				   (ask (ask person 'location) 'name)))))
+		  (all-people)))
+
       'LOOK-AROUND          ; report on world around you
       (lambda ()
 	(let* ((place (ask self 'LOCATION))
