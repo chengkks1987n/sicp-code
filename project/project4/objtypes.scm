@@ -244,7 +244,12 @@
         
       'PEOPLE-AROUND        ; other people in room...
       (lambda ()
-	(delq self (find-all (ask self 'LOCATION) 'PERSON)))
+	;;ck! don't show person with a ring-of-obfuscation
+	(filter 
+	 (lambda (p)
+	   (and (ask p 'is-a 'person)
+		(null? (ask p 'has-a 'ring-of-obfuscation))))
+	 (delq self (find-all (ask self 'LOCATION) 'PERSON))))
         
       'STUFF-AROUND         ; stuff (non people) in room...
       (lambda ()
@@ -500,11 +505,19 @@
       'FEEL-THE-FORCE ;; ck! add by ck.
       (lambda ()
 	(for-each (lambda (person)
-		  (if (not (eq? person self)) ;;ck!  without the if, me will show up.
-			(ask screen 'TELL-WORLD
-			     (list (ask person 'name)
-				   "at" 
-				   (ask (ask person 'location) 'name)))))
+		    (if (not (eq? person self)) ;;ck!  without the if, me will show up.
+			;;ck! this if statement filter the people who
+			;  don't have a ring-of-obfuscation
+			(if
+			 ;#t 
+			 (null? 
+			  (ask person 'has-a 'ring-of-obfuscation))
+			    (ask screen 'TELL-WORLD
+				 (list (ask person 'name)
+				       "at" 
+				       (ask 
+					(ask person 'location)
+					'name))))))
 		  (all-people)))
 
       'LOOK-AROUND          ; report on world around you
@@ -546,3 +559,17 @@
 	(ask person-part 'DIE perp)))
      
      person-part)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; something created by myself
+(define (create-ring-of-obfuscation  location)
+  (create-instance ring-of-obfuscation location))
+
+(define (ring-of-obfuscation self location)
+  (let ((mobile-thing-part 
+	 (mobile-thing self 'thing-of-obfuscation location)))
+    (make-handler 
+     'ring-of-obfuscation 
+     (make-methods)
+     mobile-thing-part)))
+	

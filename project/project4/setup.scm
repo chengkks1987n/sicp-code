@@ -70,7 +70,7 @@
     (create-mobile-thing 'sicp stata-center)
     (create-mobile-thing 'engineering-book barker-library)
     (create-mobile-thing 'diploma graduation-stage)
-    
+        
     (list 10-250 lobby-10 grendels-den barker-library lobby-7
           eecs-hq eecs-ug-office edgerton-hall 34-301 6001-lab
           building-13 great-court stata-center
@@ -102,7 +102,9 @@
 
 (define (populate-spells rooms)
   (for-each (lambda (room)
-	      (clone-spell (pick-random (ask chamber-of-stata 'THINGS)) room))
+	      (clone-spell 
+	       (pick-random (ask chamber-of-stata 'THINGS))
+	       room))
 	    rooms))
 
 (define (populate-players rooms)
@@ -137,6 +139,13 @@
 ;	    profs        ;uncomment after writing wit-professor
 	    monitors trolls)))
 
+;;ck!
+(define (populate-ring-of-obfuscation rooms)
+  (for-each 
+   (lambda (r)
+     (create-ring-of-obfuscation r))
+   rooms))
+
 (define me 'will-be-set-by-setup)
 (define all-rooms 'will-be-set-by-setup)
 (define chamber-of-stata 'will-be-set-by-setup)
@@ -151,6 +160,8 @@
     (populate-spells rooms)
 
     (populate-players rooms)
+    
+    (populate-ring-of-obfuscation rooms)
 
     ;uncomment after writing chosen one
 ;    (create-chosen-one 'hairy-cdr (pick-random rooms)

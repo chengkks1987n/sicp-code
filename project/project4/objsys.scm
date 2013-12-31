@@ -35,6 +35,13 @@
 ;; into the world by connecting itself up with other related
 ;; objects in the world.
 
+;;;ck! 
+(define (instance-handler? objs)
+  (cond ((null? objs) #t)
+	((or (handler? (car objs)) (instance? (car objs))) 
+	 (instance-handler? (cdr objs)))
+	(else #f)))
+
 ;;------------------------------------------------------------
 ;; Instance
 
@@ -578,5 +585,4 @@
 	  ;(pretty-print (procedure-lambda proc) (current-output-port) #T 2)
 	  'handler))
       'not-a-handler))
-
 
