@@ -567,9 +567,48 @@
 
 (define (ring-of-obfuscation self location)
   (let ((mobile-thing-part 
-	 (mobile-thing self 'thing-of-obfuscation location)))
+	 (mobile-thing self 'a-ring-of-obfuscation location)))
     (make-handler 
      'ring-of-obfuscation 
      (make-methods)
      mobile-thing-part)))
 	
+;; wand
+; Acturelly,sometimes a location is a Container, 
+; it cound be either a Place or a Person.
+; we user the location to represent the owner of a wand.
+
+(define (create-wand name location)
+  (create-instance wand name location))
+
+(define (wand self name location)
+  (let ((mobile-thing-part
+	 (mobile-thing self name location)))
+    (make-handler
+     'wand
+     (make-methods
+      'ZAP 
+      (lambda (target)
+	(let ((owner (ask self 'location)))
+	  (if (ask owner 'is-a 'person)
+	      (let ((spell (pick-random (ask owner'has-a 'spell))))
+		(if spell
+		    (begin
+		      (ask owner 'emit 
+			   (list (ask owner 'name)
+				 "wave the" (ask self 'name)
+				 "toward" (ask target 'name)
+				 ", incant" (ask spell 'incant)))		 
+		      (ask spell 'use owner target))
+		    (ask owner 'emit 
+			 (list (ask owner 'name)
+			       "wave the" (ask self 'name)
+			       "toward" (ask target 'name)
+			       ", but nothing happened.")))))))
+      'wave
+      ;; wave could apply to any type of thing
+      (lambda ()
+	(let ((t (pick-random (delq me (ask (ask me 'location) 'things)))))
+	  (if t (ask self 'zap t))))
+      )
+     mobile-thing-part)))
