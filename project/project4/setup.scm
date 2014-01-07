@@ -89,15 +89,43 @@
      chamber
      "habooic katarnum"
      (lambda (caster target)
-       (ask target 'EMIT
-	    (list (ask target 'NAME) "grows boils on their nose"))))
+       ;; !ck! fix: this action should only apply to a person
+       (if (ask target 'is-a 'person)
+	   (ask target 'EMIT
+		(list (ask target 'NAME) "grows boils on their nose"))
+	   (ask target 'EMIT 
+		(list "nothing happend." (ask target 'NAME) "is not a person")))))
     (create-spell
      'slug-spell
      chamber
      "dagnabbit ekaterin"
      (lambda (caster target)
-       (ask target 'EMIT (list "A slug comes out of" (ask target 'NAME) "'s mouth."))
+       ;; !ck! fix: this action should only apply to a person
+       (if (ask target 'is-a 'person)
+	   (ask target 'EMIT 
+		(list "A slug comes out of" (ask target 'NAME) "'s mouth."))
+	   (ask target 'EMIT 
+		(list "nothing happend." (ask target 'NAME) "is not a person")))
        (create-mobile-thing 'slug (ask target 'LOCATION))))
+    ;; !ck! create a new spell wind-of-doom
+    (create-spell
+     'wind-of-doom
+     chamber
+     "huuuuu huuuuu"
+     (lambda (caster target)
+       (cond ((ask target 'is-a 'person)
+	      (let ((damage (random 3)))
+		(ask target 'emit
+		     (list (ask target 'name) "suffers" damage "damage"))
+		(ask target 'suffer damage 'what-is-this-for)))
+	     ((ask target 'is-a 'thing)
+	      (ask target 'emit
+		   (list (ask target 'name) "is destroyed by" (ask caster 'name)))
+	      (ask target 'destroy))
+	     (else 
+	      (display-message
+	       (list "nothing happend." (ask target 'name)
+		     "is neither a thing or a person"))))))
     chamber))
 
 (define (populate-spells rooms)
