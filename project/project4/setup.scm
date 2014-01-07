@@ -137,10 +137,11 @@
 
 (define (populate-players rooms)
   (let* ((students (map (lambda (name)
-			  (create-autonomous-person name
-						    (pick-random rooms)
-						    (random-number 3)
-						    (random-number 3)))
+			  ;; !ck! change to wit-student
+			  (create-wit-student name
+					      (pick-random rooms)
+					      (random-number 3)
+					      (random-number 3)))
 			'(ben-bitdiddle alyssa-hacker
 			  course-6-frosh lambda-man)))
 ;uncomment after writing professors
@@ -161,7 +162,8 @@
 				      (pick-random rooms)
 				      (random-number 3)
 				      (random-number 3)))
-		      '(grendel registrar))))
+		      '(grendel registrar)))
+	 )
 
     (append students
 ;	    profs        ;uncomment after writing wit-professor

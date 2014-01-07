@@ -591,7 +591,7 @@
       (lambda (target)
 	(let ((owner (ask self 'location)))
 	  (if (ask owner 'is-a 'person)
-	      (let ((spell (pick-random (ask owner'has-a 'spell))))
+	      (let ((spell (pick-random (ask owner 'has-a 'spell))))
 		(if spell
 		    (begin
 		      (ask owner 'emit 
@@ -612,3 +612,36 @@
 	  (if t (ask self 'zap t))))
       )
      mobile-thing-part)))
+
+
+;;; !ck! wit-student
+(define (create-wit-student name birthplace activity miserly)
+  (create-instance wit-student name birthplace activity miserly))
+
+(define (wit-student self name birthplace activity miserly)
+  (let ((autonomous-person-part 
+	 (autonomous-person self name birthplace activity miserly))
+	(wand (create-wand 'shortest-wand birthplace)))
+    (make-handler
+     'wit-student
+     (make-methods
+      'INSTALL
+      (lambda ()
+	(ask autonomous-person-part 'install)
+	(ask autonomous-person-part 'take wand)
+	(ask clock 'add-callback
+	     (create-clock-callback 'zap-and-wave self
+					'zap-and-wave)))
+      'die
+      (lambda (perp)
+	(ask clock 'remove-callback self 'zap-and-wave)
+	(ask autonomous-person-part 'die perp))
+      'zap-and-wave
+      (lambda ()
+	(let ((w (pick-random (ask self 'has-a 'wand)))
+	      (p (pick-random (ask self 'people-around))))
+	  (cond ((and w p) (ask w 'zap p))
+		(w (ask w 'wave))
+		(else (display-message "nothing happend")))))
+      )
+     autonomous-person-part)))
