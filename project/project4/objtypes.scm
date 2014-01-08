@@ -704,4 +704,23 @@
       'counter (lambda () counter-to))
      mobile-thing-part)))
 
-      
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; !ck! choosen-one
+(define (create-choosen-one name birthplace activity miserly)
+  (create-instance choosen-one name birthplace activity miserly))
+
+(define (choosen-one self name birthplace activity miserly)
+  (let ((student-part (wit-student self name birthplace activity miserly)))
+    (make-handler 
+     'choosen-one
+     (make-methods
+      'suffer
+      (lambda (hits perp)
+	(if (>= hits (ask self 'health))
+	    (begin
+	      (ask perp 'die self)
+	      (ask self 'emit
+		   (list (ask perp 'name) "dies in the scar flare of"
+			 (ask self 'name))))
+	    (ask student-part 'suffer hits perp))))
+     student-part)))

@@ -141,6 +141,62 @@ At barker-library cheky says -- I take boil-counterspell from barker-library
 ;Unspecified return value 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; computer exercise 10 test
+
+(load "objsys.scm")
+(load "objtypes.scm")
+(load "setup.scm")
+(setup 'cheky)
+
+(ask me 'look-around)
+You are in grendels-den 
+You are not holding anything. 
+You see stuff in the room: a-ring-of-obfuscation slug-spell 
+You see other people: eric-grimson 
+The exits are in directions: up 
+;Value: ok
 
 
+(create-choosen-one 'ck (ask me 'location) 1 1)
+At grendels-den ck says -- I take shortest-wand from grendels-den 
+;Value 17: (instance #[compound-procedure 18 handler])
 
+
+(ask (car (ask me 'people-around)) 'name)
+;Value: ck
+
+(ask (car (ask me 'people-around)) 'health)
+;Value: 3
+
+(ask (car (ask me 'people-around)) 'suffer 1 me)
+At grendels-den ck says -- Ouch! 1 hits is more than I want! 
+;Value: 2
+
+(ask (car (ask me 'people-around)) 'suffer 1 me)
+At grendels-den ck says -- Ouch! 1 hits is more than I want! 
+;Value: 1
+
+(ask (car (ask me 'people-around)) 'suffer 1 me)
+At grendels-den cheky says -- I am slain! 
+An earth-shattering, soul-piercing scream is heard... 
+At grendels-den cheky dies in the scar flare of ck 
+;Value: message-displayed
+
+
+(ask (car (ask me 'people-around)) 'suffer 1 (cadr (ask me 'people-around)))
+At grendels-den eric-grimson says -- SHREEEEK!  I, uh, suddenly feel very faint... 
+At grendels-den eric-grimson says -- I lose shortest-wand 
+At grendels-den eric-grimson says -- Yaaaah! I am upset! 
+An earth-shattering, soul-piercing scream is heard... 
+At grendels-den eric-grimson dies in the scar flare of ck 
+;Value: message-displayed
+
+;; eric-grimson dies, because he wants to let ck suffer to die.
+(ask me 'look-around)
+You are in grendels-den 
+You are not holding anything. 
+You see stuff in the room: shortest-wand a-ring-of-obfuscation slug-spell 
+You see other people: ck 
+The exits are in directions: up 
+;Value: ok
