@@ -104,3 +104,43 @@ registrar moves from building-13 to lobby-10
 At lobby-10 registrar says -- Hi course-6-frosh 
 registrar moves from lobby-10 to building-13 
 ;Value: done
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; computer exercise 9 tests
+;; test counterspell
+
+(load "objsys.scm")
+(load "objtypes.scm")
+(load "setup.scm")
+(setup 'cheky)
+
+1 ]=> (ask me 'look-around)
+You are in barker-library 
+You are holding: slug-counterspell wind-counterspell 
+You see stuff in the room: a-ring-of-obfuscation boil-spell engineering-book 
+There are no other people around you. 
+The exits are in directions: down 
+;Value: ok
+
+1 ]=> (ask (thing-named 'boil-spell) 'use me me)
+At barker-library cheky grows boils on their nose 
+;Value: message-displayed
+
+1 ]=> (ask (thing-named 'boil-spell) 'use me me)
+At barker-library cheky grows boils on their nose 
+;Value: message-displayed
+
+1 ]=> (ask me 'take (create-counterspell 'boil-counterspell 'boil-spell
+				   (ask me 'location)))
+At barker-library cheky says -- I take boil-counterspell from barker-library 
+;Value 48: (instance #[compound-procedure 49 handler])
+
+;; !ck! nothing happened here, prove that my boil-counterspell works
+1 ]=> (ask (thing-named 'boil-spell) 'use me me)   
+;Unspecified return value 
+
+
+
+
+

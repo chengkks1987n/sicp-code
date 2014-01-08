@@ -61,9 +61,20 @@
 		     'DONE)
       'DEL-THING   (lambda (thing)
 		     (set! things (delq thing things))
-		     'DONE))
+		     'DONE)
+      ;; computer exercise 2
+      'HAS-A (lambda (type);; ck! add by ck.
+	       (filter (lambda (thing)
+			 (memq type (ask thing 'type)))
+		       (ask self 'THINGS)))
+      ;; computer exercise 2
+      'HAS-A-THING-NAMED
+      (lambda (name) ;; ck! add by ck
+	(filter (lambda (thing)
+		  (eq? name (ask thing 'NAME)))
+		(ask self 'THINGS)))
+      )
      root-part)))
-
 
 ;;--------------------
 ;; thing
@@ -217,17 +228,6 @@
     (make-handler
      'person
      (make-methods
-      ;; computer exercise 2
-      'HAS-A (lambda (type);; ck! add by ck.
-	       (filter (lambda (thing)
-			 (memq type (ask thing  'type)))
-		       (ask self 'THINGS)))
-      ;; computer exercise 2
-      'HAS-A-THING-NAMED
-      (lambda (name) ;; ck! add by ck
-	(filter (lambda (thing)
-		  (eq? name (ask thing 'NAME)))
-		(ask self 'THINGS)))
       'STRENGTH (lambda () strength)
       'HEALTH (lambda () health)
       'SAY
@@ -478,7 +478,16 @@
       (lambda () action)
       'USE
       (lambda (caster target)
-	(action caster target)))
+	(let ((has-counterspell #f))
+	  (if (ask target 'is-a 'container)
+	      (let ((cs (ask target 'has-a 'counterspell)))
+		(set! has-counterspell
+		      (and (not (null? cs))
+			   (not (null? (filter
+					(lambda (c)
+					  (eq? (ask c 'counter) (ask self 'name)))
+					cs)))))))
+	  (if (not has-counterspell) (action caster target)))))
      mobile-part)))
 
 (define (clone-spell spell newloc)
@@ -642,7 +651,7 @@
 	      (p (pick-random (ask self 'people-around))))
 	  (cond ((and w p) (ask w 'zap p))
 		(w (ask w 'wave))
-		(else (display-message "nothing happend")))))
+		(else (display-message (list "nothing happend"))))))
       )
      autonomous-person-part)))
 
@@ -680,3 +689,19 @@
 				"the spell --" (ask spell 'name)))))))
       )
      student-part)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; !ck! counterspell
+
+(define (create-counterspell name counter location)
+  (create-instance counterspell name counter location))
+
+(define (counterspell self name counter-to location)
+  (let ((mobile-thing-part (mobile-thing self name location)))
+    (make-handler
+     'counterspell
+     (make-methods
+      'counter (lambda () counter-to))
+     mobile-thing-part)))
+
+      
