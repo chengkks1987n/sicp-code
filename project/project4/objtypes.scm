@@ -645,3 +645,38 @@
 		(else (display-message "nothing happend")))))
       )
      autonomous-person-part)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; !ck! wit-professor
+
+(define (create-wit-professor name birthplace activity miserly)
+  (create-instance wit-professor name birthplace activity miserly))
+
+(define (wit-professor self name birthplace activity miserly)
+  (let ((student-part (wit-student self name birthplace activity miserly)))
+    (make-handler
+     'wit-professor
+     (make-methods
+      'install
+      (lambda ()
+	(ask student-part 'install)
+	(ask clock 'add-callback
+	     (create-clock-callback 'teach-a-spell self
+				    'teach-a-spell)))
+      'die
+      (lambda (perp)
+	(ask clock 'remove-callback self 'teach-a-spell)
+	(ask student-part 'die perp))
+      'teach-a-spell
+      (lambda ()
+	(let ((stu (pick-random (filter 
+				 (lambda (p) (ask p 'is-a 'wit-student))
+				 (ask self 'people-around))))
+	      (spell (pick-random (ask chamber-of-stata 'THINGS))))
+	  (if stu
+	      (begin (clone-spell spell stu)
+		     (ask self 'emit
+			  (list (ask self 'name) "teaches" (ask stu 'name) 
+				"the spell --" (ask spell 'name)))))))
+      )
+     student-part)))

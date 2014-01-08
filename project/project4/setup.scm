@@ -145,12 +145,12 @@
 			'(ben-bitdiddle alyssa-hacker
 			  course-6-frosh lambda-man)))
 ;uncomment after writing professors
-;	 (profs (map (lambda (name)
-;		       (create-wit-professor name
-;					     (pick-random rooms)
-;					     (random-number 3)
-;					     (random-number 3)))
-;		     '(susan-hockfield eric-grimson)))
+	 (profs (map (lambda (name)
+		       (create-wit-professor name
+					     (pick-random rooms)
+					     (random-number 3)
+					     (random-number 3)))
+		     '(susan-hockfield eric-grimson)))
 	 (monitors (map (lambda (name)
 			  (create-hall-monitor name
 					       (pick-random rooms)
@@ -166,7 +166,7 @@
 	 )
 
     (append students
-;	    profs        ;uncomment after writing wit-professor
+	    profs        ;uncomment after writing wit-professor
 	    monitors trolls)))
 
 ;;ck!
