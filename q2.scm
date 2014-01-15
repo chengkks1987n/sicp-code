@@ -104,3 +104,62 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; part 2
+; I don't have the partial environment diaggram.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; part 3
+;; see the solution.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;; question 15
+(define sheets-for-floder
+  (lambda ()
+    (fold-right + 0
+		(map (lambda (t) (ask t 'sheets)) contents))))
+
+
+;; question 19
+(define (aged-cabinet self name)
+  (let ((cabinet-part (cabinet self name))
+	(age 0))
+    (make-handler
+     'aged-cabinet
+     (make-methods
+      'add-thing
+      (lambda (t)
+	(if (> age 4)
+	    'broken
+	    (begin 
+	      (ask cabinet-part 'add-thing t)
+	      (set! age (+ 1 age)))))
+      )
+     cabinet-part)))
+
+;; question 20
+(define (located-cabinet self name x y)
+  (let ((cabinet-part (cabinet self name))
+	(located-part (located-object self x y)))
+    (make-handler
+     'located-cabinet
+     (make-methods)
+     cabinet-part located-part)))
+
+;; question 21
+(make-methods
+ 'set-x!
+ (lambda (newx)
+   (display "My location has changed")
+   (newline)
+   (ask 'located-part 'set-x! newx)))
+    
+;; question 22
+; no
+(make-methods
+ 'set-x-y!
+ (lambda (nx ny)
+   (ask self 'set-x! nx)
+   (ask self 'set-y! ny)))
+
