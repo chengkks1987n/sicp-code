@@ -21,3 +21,21 @@
 (define (operator exp) (cadr exp))
 (define (operands exp) (cddr exp))
 
+;;; exercise 4.3 
+;; get: <key> -> (<exp>, <env> -> ?)
+;; put; <key>, (<exp>, <env> -> ?) -> null
+
+(define (exp-tag exp) (car exp))
+
+(define (eval exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))
+        ((pair? exp)
+	 (let ((proc (get (exp-tag exp))))
+	   (if proc
+	       (apply proc exp env)
+	       (if (application? exp)
+		   (apply (eval (operator exp) env)
+			  (list-of-values (operands exp) env))))))
+        (else
+         (error "Unknown expression type -- EVAL" exp))))
