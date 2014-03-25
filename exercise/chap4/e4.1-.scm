@@ -12,4 +12,12 @@
       (let ((first (list-of-values (rest-operands exps) env)))
 	(cons (eval (first-operand exps) env) first))))
 
-;;;; 
+;;;; exercise 4.2 (a)
+;; when apply procedure 'application?' on the 'cond clauses', ithe procedure
+;; will return true.
+
+;;;; exercise 4.2 (b)
+(define (application? exp) (tagged-list? exp 'call))
+(define (operator exp) (cadr exp))
+(define (operands exp) (cddr exp))
+
