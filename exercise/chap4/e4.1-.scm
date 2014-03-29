@@ -122,3 +122,39 @@
   (if (special-clause? clause)
       (cons (caddr clause) (cond-predicate clause))
       (cdr clause)))
+
+;;; exercise 4.6
+(define (let? exp)
+  (tagged-list? exp 'let))
+
+(define (let-vars exp)
+  (map car (cdr exp)))
+
+(define (let-exps exp)
+  (map (cadr (cdr exp))))
+
+(define (let-body exp)
+  (cddr exp))
+
+(define (let->combinations exp)
+  (cons 
+   (make-lambda (let-vars exp) (let-body exp))
+   (let-exps exp))
+  )
+
+;;; exercise 4.7
+(define (let*? exp)
+  (tagged-list? exp 'let*))
+
+(define (sequence->let seqs body)
+  (if (last-exp? seqs)
+      (cons 'let seqs body)
+      (cons 'let (list (first-exp seqs))
+	    (sequence->let (rest-exp seqs) body))))
+
+(define (let*->nested-let exp)
+  (let ((seqs (cadr exp))
+	(body (cddr exp)))
+    (sequnece-let seqs body)))
+
+
