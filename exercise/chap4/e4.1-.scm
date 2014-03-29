@@ -83,8 +83,8 @@
 
 ;; derived and  
 (define (and->if exps env)
-  (let ((consequent true)
-	(alternative false))
+  (let ((consequent 'true)
+	(alternative 'false))
     (if (not (last-exp? exps))
 	(set! consequent 
 	      (and->if (rest-exp exps))))
@@ -92,8 +92,8 @@
 
 ;; derived or
 (define (or->if exps env)
-  (let ((consequent true)
-	(alternative false))
+  (let ((consequent 'true)
+	(alternative 'false))
     (if (not (last-exp? exps))
 	(set! alternative 
 	      (or->if (rest-exp exps))))
@@ -111,3 +111,14 @@
                 (list-of-values (operands exp) env)))
         (else
          (error "Unknown expression type -- EVAL" exp))))
+
+;;; exercise 4.5
+;; and this procedure:
+(define (special-clause? clause)
+  (tagged-list? (cdr clause) '=>))
+
+;; change procedure cond-actions to this:
+(define (cond-actions clause)
+  (if (special-clause? clause)
+      (cons (caddr clause) (cond-predicate clause))
+      (cdr clause)))
