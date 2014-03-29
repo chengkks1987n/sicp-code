@@ -39,3 +39,75 @@
 			  (list-of-values (operands exp) env))))))
         (else
          (error "Unknown expression type -- EVAL" exp))))
+
+;;; exercise 4.4
+;; and
+(define (and? exp)
+  ;; and-expression must must have at least one prediction
+  (and (tagged-list? exp 'and) (not (null? (cdr exp)))))
+
+(define (and-exps exp) (cdr exp))
+
+(define (eval-and exps env)
+  (if (last-exp? exp)
+      (eval (first-exp exps) env)
+      (if (eval (first-exp exp) env)
+	  (eval-and (rest-exp exps) env)
+	  false)))
+;; or
+(define (or? exp)
+  ;; or-expression must must have at least one prediction
+  (and (tagged-list? exp 'or) (not (null? (cdr exp)))))
+
+(define (or-exps exp) (cdr exp))
+
+(define (eval-or exps env)
+  (if (last-exp? exp)
+      (eval (first-exp exps) env)
+      (if (eval (first-exp exp) env)
+	  true
+	  (eval-or (rest-exp exps) env))))
+
+;;; change procedur 'eval' to this:
+(define (eval exp env)
+  (cond ((self-evaluating? exp) exp)
+	;;......
+	((and? exp) (eval-and (and-exps exp) env))
+	((or? exp) (eval-or (or-exps exp) env))
+	;;......
+        ((application? exp)
+         (apply (eval (operator exp) env)
+                (list-of-values (operands exp) env)))
+        (else
+         (error "Unknown expression type -- EVAL" exp))))
+
+;; derived and  
+(define (and->if exps env)
+  (let ((consequent true)
+	(alternative false))
+    (if (not (last-exp? exps))
+	(set! consequent 
+	      (and->if (rest-exp exps))))
+    (make-if (first-exp exps) consequent alternative)))
+
+;; derived or
+(define (or->if exps env)
+  (let ((consequent true)
+	(alternative false))
+    (if (not (last-exp? exps))
+	(set! alternative 
+	      (or->if (rest-exp exps))))
+    (make-if (first-exp exps) consequent alternative)))
+
+;;; change procedur 'eval' to this:
+(define (eval exp env)
+  (cond ((self-evaluating? exp) exp)
+	;;......
+	((and? exp) (eval-if (and->if (and-exps exp)) env))
+	((or? exp) (eval-if (or->if (or-exps exp) env)))
+	;;......
+        ((application? exp)
+         (apply (eval (operator exp) env)
+                (list-of-values (operands exp) env)))
+        (else
+         (error "Unknown expression type -- EVAL" exp))))
