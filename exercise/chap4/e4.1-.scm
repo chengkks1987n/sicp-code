@@ -157,4 +157,65 @@
 	(body (cddr exp)))
     (sequnece-let seqs body)))
 
+;;; exercise 4.8
+(define (named-let? exp) 
+  (and (let? exp) (not (null? (cdddr exp)))))
+
+(define (named-let-body exp)
+  (cdddr exp))
+
+(define (named-let-var exp)
+  (cadr exp))
+
+(define (named-let-exps exp)
+  (map car (caddr exp)))
+
+(define (named-let-vals exp)
+  (map car (caddr exp)))
+
+(define (named-let->combination exp)
+  (make-begin
+   ((list 'define (named-let-var exp) (make-lambda (named-let-exps exp)
+					     (named-let-body exp)))
+    (cons (named-let-var exp) (named-let-vals exp)))))
+
+;; rewirte procedure let->combination
+(define (let->combination exp)
+  (cond ((named-let? exp) (named-let->combination exp))
+	((let? exp)   (cons 
+		       (make-lambda (let-vars exp) (let-body exp))
+		       (let-exps exp)))
+	(else (error "not a let expression --- in let->combination"))))
+
+;;; exercise 4.9
+;; design a new expression 'while'
+;(while <prediction>
+;       <body>)
+
+;; will switch to 
+;(define tmp-fun 
+;  (lambda () 
+;    (if <prediction>
+;	(begin 
+;	  <body>
+;	  tmp-fun))))
+;(tmp-fun)
+
+(define (while? exp)
+  (tagged-list? 'while))
+
+(defien (while-pred exp)
+  (cadr exp))
+(define (while-body exp)
+  (cddr exp))
+
+(define (while->combination exp)
+  (make-begin
+   (list 'define 'while-fun 
+	 (make-lambda '() 
+		      (make-if (while-pred exp)
+			       (make-begin 
+				(while-body exp)
+				'(while-fun)))))
+   '(while-fun)))
 
