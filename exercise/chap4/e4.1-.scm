@@ -219,3 +219,22 @@
 				'(while-fun)))))
    '(while-fun)))
 
+;;; exercise 4.11
+(define (make-frame vars vals)
+  (cond ((and (null? vars) (null? vals))
+	 '())
+	((and (not (null? vars)) (not (null? vals)))
+	 (cons (cons (car vars) (car vals)) 
+	       (make-frame (cdr vars) (cdr vals))))
+	(else 
+	 (error "vars and vals have diffterent lengths! --- MAKE_FRAME"))))
+
+(define (frame-variables f)
+  (map car f))
+
+(define (frame-values f)
+  (map cdr f))
+
+(define (add-binding-to-frame var val f)
+  (set! f (cons (cons var val)
+		f)))
