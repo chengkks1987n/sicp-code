@@ -238,3 +238,71 @@
 (define (add-binding-to-frame var val f)
   (set! f (cons (cons var val)
 		f)))
+
+;;; exercise 4.12
+(define (lookup-in-frame var f)
+  (define (iter vars vals)
+    (if (null? vars)
+	'()
+	(if (eq? var (car vars))
+	    (car vals)
+	    (iter (cdr vars) (cdr vals)))))
+  (let ((vars (frame-variables f))
+	(vals (frame-values f)))
+    (iter vars vals)))
+
+(define (has-variable-in-frame? var f)
+  (let ((vars (frame-variables f)))
+    (memq var vars)))
+
+(define (set-in-frame! var val f)
+  ;; this code is for binding-implemetation, see exercise 4.11
+  (let ((binding (assq var f)))
+    (if binding
+	(set-cdr! binding val))))
+
+(define (set-in-frame! var val f)
+  ;; this code is for list-implemetation
+  (define (iter vars vals)
+    (if (eq? var (car vars))
+	(set-car! vals val)
+	(iter (cdr vars) (cdr vals))))
+  (let ((vars (car f))
+	(vals (cadr f)))
+    (iter vars vals)))
+
+(define (lookup-variable-value var env)
+  ((member-procedure (lambda (f)
+		       (not (null? f))))
+   (map lookup-in-frame env)))
+
+(define (define-variable! var val env)
+  (if (has-variable-in-frame (first-frame env))
+      (set-in-frame! var val (first-frame env))
+      (add-binding-to-frame var val (first-frame env))))
+
+(define (set-variable! var val env)
+  ((member-procedure (lambda (f)
+		       (if (has-variable-in-frame? var f)
+			   (begin
+			     (set-in-frame var val env)
+			     'true)
+			   'false)))
+   env))
+
+;;; exercise 4.13
+(define (del-from-frame! var f)
+  (define (iter vars vals)
+    (if (null? vars)
+	'()
+	(if (eq? var (car vars))
+	    (begin (set! vars (cdr vars))
+		   (Set! vals (cdr vals))
+		   'OK)
+	    (iter (cdr vars) (cdr vals)))))
+  (iter (frame-variables f) (frame-values f)))
+
+(define (make-unbound! var env)
+  (let ((f (first-frame env)))
+    (if (null? (del-from-frame! var f))
+	(make-unbound! var (enclosing-enviroment env)))))
