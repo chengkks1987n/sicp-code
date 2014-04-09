@@ -89,6 +89,13 @@
 	(list 'display display)
 	(list 'not not)
         ; ... more primitives
+	; !ck!->
+	(list '* *)
+	(list '/ /)
+	(list 'cadr cadr)
+	(list 'cddr cddr)
+	(list 'newline newline)
+	; <-!ck!
         ))
 
 (define (primitive-procedure-names) (map car (primitive-procedures)))

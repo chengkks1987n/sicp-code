@@ -53,3 +53,22 @@
 	   (+ x y))
 	the-global-environment)
 ;Value: 32
+
+;;;computer exercise 1
+(load "environment.scm")
+(m-eval '(/ 1 2) the-global-environment)
+;Value: 1/2
+(m-eval '(* 1 2) the-global-environment)
+;Value: 2
+(m-eval '(cadr '(1 2 3 4)) the-global-environment)
+;Value: 2
+(m-eval '(cddr '(1 2 3 4)) the-global-environment)
+;Value 13: (3 4)
+(m-eval '(begin 
+	   (display 'start)
+	   (newline)
+	   (display 'over))
+	the-global-environment)
+;start
+;over
+;;Unspecified return value
