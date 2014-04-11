@@ -224,29 +224,25 @@
 ; ]=> 12
 ;Value: #t
 
-;;; change procedur 'eval' to this:
-(define (eval exp env)
-  (cond ((self-evaluating? exp) exp)
-	;;......
-	((and? exp) (eval-if (and->if (and-exps exp)) env))
-	((or? exp) (eval-if (or->if (or-exps exp) env)))
-	;;......
-        ((application? exp)
-         (apply (eval (operator exp) env)
-                (list-of-values (operands exp) env)))
-        (else
-         (error "Unknown expression type -- EVAL" exp))))
-
 ;;; exercise 4.5
-;; and this procedure:
 (define (special-clause? clause)
   (tagged-list? (cdr clause) '=>))
-
+(define special-test car)
+(define special-recipient caddr)
+(define (special->normal-clause c)
+  (list (special-test c) (list (special-recipient c) (special-test c))))
 ;; change procedure cond-actions to this:
-(define (cond-actions clause)
-  (if (special-clause? clause)
-      (cons (caddr clause) (cond-predicate clause))
-      (cdr clause)))
+(define (first-cond-clause clauses)
+  (if (special-clause? (car clauses))
+      (special->normal-clause (car clauses))
+      (car clauses)))
+
+;; test
+;; fistly add procedure 'assoc' to primivate procedure
+(m-eval '(cond ((assoc 'b '((a 1) (b 2))) => cadr)
+	       (else false))
+	the-global-environment)
+;Value: 2
 
 ;;; exercise 4.6
 (define (let? exp)

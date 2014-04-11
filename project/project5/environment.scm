@@ -95,6 +95,7 @@
 	(list 'cadr cadr)
 	(list 'cddr cddr)
 	(list 'newline newline)
+	(list 'assoc assoc)
 	; <-!ck!
         ))
 
