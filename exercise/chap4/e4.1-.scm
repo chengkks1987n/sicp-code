@@ -80,7 +80,7 @@
 ;Value 36: "abc"
 (eval '(+ 2 3) the-global-environment)
 ;Value: 5
-(eval '(s 2 3) the-global-environment)
+;(eval '(s 2 3) the-global-environment)
 ;error!=> Unbound variable -- LOOKUP s
 
 ;; add quote
@@ -108,11 +108,15 @@
 	  (if (eval (first-exp exps) env)
 	      (eval-and (rest-exps exps) env)
 	      false))))
-;; tests
+;; test and
 (put-eval! 'and (lambda (exp env)
 		  (eval-and (and-exps exp) env)))
 (eval '(and) the-global-environment)
 ;Value: #t
+(eval '(and 12) the-global-environment)
+;Value: 12
+(eval '(and true 12) the-global-environment)
+;Value: 12
 (eval '(and true false) the-global-environment)
 ;;Value: #f
 (eval '(and #f #f #f) the-global-environment)
@@ -134,31 +138,91 @@
 
 (define (or-exps exp) (cdr exp))
 (define (eval-or exps env)
-  (if (last-exp? exps)
-      (eval (first-exp exps) env)
-      (if (eval (first-exp exp) env)
-	  true
-	  (eval-or (rest-exps exps) env))))
+  (if (null? exps) true
+      (if (last-exp? exps)
+	  (eval (first-exp exps) env)
+	  (if (eval (first-exp exps) env)
+	      true
+	      (eval-or (rest-exps exps) env)))))
 ;; test or
-
+(put-eval! 'or (lambda (exp env)
+		  (eval-or (or-exps exp) env)))
+(eval '(or) the-global-environment)
+;Value: #t
+(eval '(or 12) the-global-environment)
+;Value: 12
+(eval '(or false 2) the-global-environment)
+;Value: 2
+(eval '(or true false) the-global-environment)
+;Value: #t
+(eval '(or #f #f #f) the-global-environment)
+;Value: #f
+(eval '(or (begin (display '1) #f)
+	   (begin (display '2) #t)
+	   (begin (display '3) #f))
+      the-global-environment)
+; ]=> 12
+;Value: #t
 
 ;; derived and  
-(define (and->if exps env)
-  (let ((consequent 'true)
-	(alternative 'false))
-    (if (not (last-exp? exps))
-	(set! consequent 
-	      (and->if (rest-exp exps))))
-    (make-if (first-exp exps) consequent alternative)))
+(define (and->if exps)
+  (if (null? exps) 'true
+      (if (last-exp? exps)
+	  (first-exp exps)
+	  (make-if (first-exp exps) 
+		   (and->if (rest-exps exps))
+		   'false))))
+
+;;test derived and
+(put-eval! 'and (lambda (exp env)
+		  (eval (and->if (and-exps exp)) env)))
+(put-eval! 'if eval-if)
+(eval '(and) the-global-environment)
+;Value: #t
+(eval '(and 2) the-global-environment)
+;Value: 2
+(eval '(and true 12) the-global-environment)
+;Value: 12
+(eval '(and true false) the-global-environment)
+;;Value: #f
+(eval '(and #f #f #f) the-global-environment)
+;;Value: #f
+(eval '(and #t #t #t) the-global-environment)
+;Value: #t
+(eval '(and (begin (display '1) #t)
+	    (begin (display '2) #f)
+	    (begin (display '3) #f))
+      the-global-environment)
+; ]=> 12
+;Value: #f
 
 ;; derived or
-(define (or->if exps env)
-  (let ((consequent 'true)
-	(alternative 'false))
-    (if (not (last-exp? exps))
-	(set! alternative 
-	      (or->if (rest-exp exps))))
-    (make-if (first-exp exps) consequent alternative)))
+(define (or->if exps)
+  (if (null? exps) 'true
+      (if (last-exp? exps)
+	  (first-exp exps)
+	  (make-if (first-exp exps) 
+		   'true
+		   (or->if (rest-exps exps))))))
+
+;; test derived or
+(put-eval! 'or (lambda (exp env)
+		 (eval (or->if (or-exps exp)) env)))
+(eval '(or) the-global-environment)
+;Value: #t
+(eval '(or 12) the-global-environment)
+;Value: 12
+(eval '(or false 2) the-global-environment)
+;Value: 2
+(eval '(or true false) the-global-environment)
+;Value: #t
+(eval '(or #f #f #f) the-global-environment)
+;Value: #f
+(eval '(or (begin (display '1) #f)
+	   (begin (display '2) #t)
+	   (begin (display '3) #f)) the-global-environment)
+; ]=> 12
+;Value: #t
 
 ;;; change procedur 'eval' to this:
 (define (eval exp env)
