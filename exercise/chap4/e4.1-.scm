@@ -45,23 +45,56 @@
 (eval '(call + 1 2) the-global-environment)
 ;Value: 3
 
-;;; exercise 4.3 
-;; get: <key> -> (<exp>, <env> -> ?)
-;; put; <key>, (<exp>, <env> -> ?) -> null
-(define (exp-tag exp) (car exp))
 
+(load "../../project/project5/meval.scm")
+(load "../../project/project5/environment.scm")
+(load "../../project/project5/syntax.scm")
+;;; exercise 4.3 
+(define eval-dispath-data '())
+(define (put-eval! sym proc)
+  (set! eval-dispath-data (cons (list sym proc) eval-dispath-data)))
+(define (get-eval sym)
+  (let ((p (assq sym eval-dispath-data)))
+    (if p (cadr p) #f)))
+; get the tag of expression
+(define (exp-tag exp) (car exp))
 (define (eval exp env)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((pair? exp)
-	 (let ((proc (get (exp-tag exp))))
+	 (let ((proc (get-eval (exp-tag exp))))
 	   (if proc
-	       (apply proc exp env)
+	       (apply proc (list exp env))
 	       (if (application? exp)
-		   (apply (eval (operator exp) env)
-			  (list-of-values (operands exp) env))))))
+		   (m-apply (eval (operator exp) env)
+			  (list-of-values (operands exp) env))
+		   (error "unknown")))))
         (else
          (error "Unknown expression type -- EVAL" exp))))
+
+(eval '+ the-global-environment)
+;Value 35: (primitive #[arity-dispatched-procedure 19])
+(eval '12 the-global-environment)
+;Value: 12
+(eval "abc" the-global-environment)
+;Value 36: "abc"
+(eval '(+ 2 3) the-global-environment)
+;Value: 5
+(eval '(s 2 3) the-global-environment)
+;error!=> Unbound variable -- LOOKUP s
+
+;; add quote
+(put-eval! 'quote (lambda (exp env)
+		    (text-of-quotation exp)))
+(eval ''s the-global-environment)
+;Value: s
+(eval ''(s b) the-global-environment)
+;Value 41: (s b)
+
+;; add some more types of expressions such as if, cond, let, deffine...
+;; and test them....
+
+(define eval m-eval)
 
 ;;; exercise 4.4
 ;; and
