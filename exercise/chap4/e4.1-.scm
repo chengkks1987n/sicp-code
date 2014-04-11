@@ -1,3 +1,8 @@
+
+(load "../../project/project5/meval.scm")
+(load "../../project/project5/environment.scm")
+(load "../../project/project5/syntax.scm")
+(define eval m-eval)
 ;;;; exercise 4.1
 ;; eval from left to right
 (define (list-of-values exps env)
@@ -5,12 +10,28 @@
       '()
       (let ((first (eval (first-operand exps) env)))
 	(cons first (list-of-values (rest-operands exps) env)))))
+
+;; tests
+(list-of-values '((begin (display 'left) 'left)
+		  (begin (display 'right) 'right))
+		the-global-environment)
+; ]=> leftright
+;;Value 11: (left right)
+
 ;; eval from right to left
+
 (define (list-of-values exps env)
   (if (no-operands? exps)
       '()
-      (let ((first (list-of-values (rest-operands exps) env)))
-	(cons (eval (first-operand exps) env) first))))
+      (let ((rest (list-of-values (rest-operands exps) env)))
+	(cons (eval (first-operand exps) env) rest))))
+
+;; tests
+(list-of-values '((begin (display 'left) 'left)
+		  (begin (display 'right) 'right))
+		the-global-environment)
+; ]=> rightleft
+;Value 12: (left right)
 
 ;;;; exercise 4.2 (a)
 ;; when apply procedure 'application?' on the 'cond clauses', ithe procedure
