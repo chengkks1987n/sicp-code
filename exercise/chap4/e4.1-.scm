@@ -94,48 +94,53 @@
 ;; add some more types of expressions such as if, cond, let, deffine...
 ;; and test them....
 
-(define eval m-eval)
-
 ;;; exercise 4.4
-;; and
+;; special form of and
 (define (and? exp)
-  ;; and-expression must must have at least one prediction
-  (and (tagged-list? exp 'and) (not (null? (cdr exp)))))
+  (tagged-list? exp 'and))
 
 (define (and-exps exp) (cdr exp))
 
 (define (eval-and exps env)
-  (if (last-exp? exp)
-      (eval (first-exp exps) env)
-      (if (eval (first-exp exp) env)
-	  (eval-and (rest-exp exps) env)
-	  false)))
-;; or
+  (if (null? exps) true
+      (if (last-exp? exps)
+	  (eval (first-exp exps) env)
+	  (if (eval (first-exp exps) env)
+	      (eval-and (rest-exps exps) env)
+	      false))))
+;; tests
+(put-eval! 'and (lambda (exp env)
+		  (eval-and (and-exps exp) env)))
+(eval '(and) the-global-environment)
+;Value: #t
+(eval '(and true false) the-global-environment)
+;;Value: #f
+(eval '(and #f #f #f) the-global-environment)
+;;Value: #f
+(eval '(and #t #t #t) the-global-environment)
+;Value: #t
+(put-eval! 'begin (lambda (exp env)
+		    (eval-sequence (begin-actions exp) env)))
+(eval '(and (begin (display '1) #t)
+	    (begin (display '2) #f)
+	    (begin (display '3) #f))
+      the-global-environment)
+; ]=> 12
+;Value: #f
+
+;; special form of or
 (define (or? exp)
-  ;; or-expression must must have at least one prediction
-  (and (tagged-list? exp 'or) (not (null? (cdr exp)))))
+  (tagged-list? exp 'or))
 
 (define (or-exps exp) (cdr exp))
-
 (define (eval-or exps env)
-  (if (last-exp? exp)
+  (if (last-exp? exps)
       (eval (first-exp exps) env)
       (if (eval (first-exp exp) env)
 	  true
-	  (eval-or (rest-exp exps) env))))
+	  (eval-or (rest-exps exps) env))))
+;; test or
 
-;;; change procedur 'eval' to this:
-(define (eval exp env)
-  (cond ((self-evaluating? exp) exp)
-	;;......
-	((and? exp) (eval-and (and-exps exp) env))
-	((or? exp) (eval-or (or-exps exp) env))
-	;;......
-        ((application? exp)
-         (apply (eval (operator exp) env)
-                (list-of-values (operands exp) env)))
-        (else
-         (error "Unknown expression type -- EVAL" exp))))
 
 ;; derived and  
 (define (and->if exps env)
