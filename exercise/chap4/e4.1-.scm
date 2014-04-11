@@ -34,18 +34,20 @@
 ;Value 12: (left right)
 
 ;;;; exercise 4.2 (a)
-;; when apply procedure 'application?' on the 'cond clauses', ithe procedure
-;; will return true.
+;; when apply procedure 'application?' on the 'cond clauses', true will be returned
+;; (define x 3) will be regarded as a procedure.
 
 ;;;; exercise 4.2 (b)
 (define (application? exp) (tagged-list? exp 'call))
 (define (operator exp) (cadr exp))
 (define (operands exp) (cddr exp))
+;; tests
+(eval '(call + 1 2) the-global-environment)
+;Value: 3
 
 ;;; exercise 4.3 
 ;; get: <key> -> (<exp>, <env> -> ?)
 ;; put; <key>, (<exp>, <env> -> ?) -> null
-
 (define (exp-tag exp) (car exp))
 
 (define (eval exp env)
