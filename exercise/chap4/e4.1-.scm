@@ -67,7 +67,7 @@
 	       (apply proc (list exp env))
 	       (if (application? exp)
 		   (m-apply (eval (operator exp) env)
-			  (list-of-values (operands exp) env))
+			    (list-of-values (operands exp) env))
 		   (error "unknown")))))
         (else
          (error "Unknown expression type -- EVAL" exp))))
@@ -389,21 +389,53 @@
 
 (define (while? exp)
   (tagged-list? 'while))
-
-(defien (while-pred exp)
+(define (while-pred exp)
   (cadr exp))
 (define (while-body exp)
   (cddr exp))
 
 (define (while->combination exp)
   (make-begin
-   (list 'define 'while-fun 
-	 (make-lambda '() 
-		      (make-if (while-pred exp)
-			       (make-begin 
-				(while-body exp)
-				'(while-fun)))))
-   '(while-fun)))
+   (list
+    (list 'define 'while-fun 
+	  (make-lambda
+	   '() 
+	   (list (make-if (while-pred exp)
+			  (make-begin 
+			   (append (while-body exp)
+				   '((while-fun))))
+			  ''done))))
+   '(while-fun))))
+
+;; test
+(define we '(while (< i 10)
+		   (display i)
+		   (set! i (+ i 2))))
+(while->combination we)
+;Value 60: (begin (define while-fun (lambda () (if (< i 10) (begin (display i) (set! i (+ i 2)) (while-fun)) (quote done)))) (while-fun))
+(put-eval! 'while (lambda (exp env)
+		    (eval (while->combination exp) env)))m
+(put-eval! 'define eval-definition)
+(put-eval! 'set! eval-assignment)
+(define e '(define i 3))
+(eval e the-global-environment)
+(eval 'i the-global-environment)
+;Value: 3
+(eval we the-global-environment)
+; ]=>3579
+;Value: done
+
+;;; todo:
+;;; fix the follow bug:
+(define t '(let ((i 1))
+	     (while (< i 10)
+		    (display i)
+		    (set! i (+ i 2)))))
+(define t1 '((lambda (i) (while (< i 10) (display i) (set! i (+ i 2)))) 1))
+(define t2 '(lambda (i) (while (< i 10) (display i) (set! i (+ i 2)))))
+(eval t1 the-global-environment)
+
+
 
 ;;; exercise 4.11
 (define (make-frame vars vals)
