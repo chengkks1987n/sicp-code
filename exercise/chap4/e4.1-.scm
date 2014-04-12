@@ -287,44 +287,91 @@
 
 (define (sequence->let seqs body)
   (if (last-exp? seqs)
-      (cons 'let seqs body)
-      (cons 'let (list (first-exp seqs))
-	    (sequence->let (rest-exp seqs) body))))
+      (append (list 'let seqs) body)
+      (append (list 'let (list (first-exp seqs)))
+	      (list (sequence->let (rest-exps seqs) body)))))
 
 (define (let*->nested-let exp)
   (let ((seqs (cadr exp))
 	(body (cddr exp)))
-    (sequnece-let seqs body)))
+    (sequence->let seqs body)))
+
+;; TEST
+(DEFINE E '(LET* ((X 3)
+		  (Y (+ X 2))
+		  (Z (+ X Y 5)))
+		 (display y)
+		 (* X Z)))
+(let*? e)
+;Value: #t
+(let*->nested-let e)
+;Value 67: (let ((x 3)) (let ((y (+ x 2))) (let ((z (+ x y 5))) (display y) (* x z))))
+(put-eval! 'let* (lambda (exp env)
+		   (eval (let*->nested-let exp) env)))
+(eval e the-global-environment)
+; ]=> 5
+;Value: 39
+
 
 ;;; exercise 4.8
 (define (named-let? exp) 
-  (and (let? exp) (not (null? (cdddr exp)))))
-
+  (and (let? exp) (symbol? (cadr exp))))
 (define (named-let-body exp)
   (cdddr exp))
-
 (define (named-let-var exp)
   (cadr exp))
-
 (define (named-let-exps exp)
   (map car (caddr exp)))
-
 (define (named-let-vals exp)
-  (map car (caddr exp)))
-
+  (map cadr (caddr exp)))
 (define (named-let->combination exp)
   (make-begin
-   ((list 'define (named-let-var exp) (make-lambda (named-let-exps exp)
-					     (named-let-body exp)))
+   (list
+    (list 'define (named-let-var exp) 
+	  (make-lambda (named-let-exps exp)
+		       (named-let-body exp)))
     (cons (named-let-var exp) (named-let-vals exp)))))
 
-;; rewirte procedure let->combination
-(define (let->combination exp)
+(define (new-let->combination exp)
   (cond ((named-let? exp) (named-let->combination exp))
-	((let? exp)   (cons 
-		       (make-lambda (let-vars exp) (let-body exp))
-		       (let-exps exp)))
+	((let? exp) (let->combinations exp))
 	(else (error "not a let expression --- in let->combination"))))
+
+;; test
+(define e '(let ((a 1)
+		 (b 2))
+	     (display (+ a b))
+	     (display (+ a a b))
+	     (* a b)))
+(define e1 '(define (fib n)
+	     (let iter ((a 1)
+			(b 0)
+			(count n))
+	       (if (= count 0)
+		   b
+		   (iter (+ a b) a (- count 1))))))
+(define x '(let iter ((a 1)
+		      (b 0)
+		      (count 5))
+	     (if (= count 0)
+		 b
+		 (iter (+ a b) a (- count 1)))))
+(named-let? e1)
+;Value: #f
+(named-let? e)
+;Value: #f
+(named-let? x)
+;Value: #t
+(named-let->combination x)
+;Value 82: (begin (define iter (lambda (a b count) (if (= count 0) b (iter (+ a b) a (- count 1))))) (iter 1 0 5))
+(put-eval! 'let (lambda (exp env)
+		  (eval (new-let->combination exp) env)))
+(eval x the-global-environment)
+;Value: 5
+(eval e the-global-environment)
+; ]=> 34
+;Value: 2
+
 
 ;;; exercise 4.9
 ;; design a new expression 'while'
