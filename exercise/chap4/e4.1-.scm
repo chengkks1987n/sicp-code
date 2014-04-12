@@ -249,10 +249,10 @@
   (tagged-list? exp 'let))
 
 (define (let-vars exp)
-  (map car (cdr exp)))
+  (map car (cadr exp)))
 
 (define (let-exps exp)
-  (map (cadr (cdr exp))))
+  (map cadr (cadr exp)))
 
 (define (let-body exp)
   (cddr exp))
@@ -262,6 +262,24 @@
    (make-lambda (let-vars exp) (let-body exp))
    (let-exps exp))
   )
+;; test
+(define e '(let ((a 1)
+		 (b 2))
+	     (display (+ a b))
+	     (display (+ a a b))
+	     (* a b)))
+(let-vars e)
+(let-exps e)
+(let-body e)
+(let->combinations e)
+(put-eval! 'let (lambda (exp env)
+		  (eval (let->combinations exp) env)))
+(put-eval! 'lambda (lambda (exp env)
+		     (make-procedure 
+		      (lambda-parameters exp) (lambda-body exp) env)))
+(eval e the-global-environment)
+; ]=> 34
+;Value: 2
 
 ;;; exercise 4.7
 (define (let*? exp)
