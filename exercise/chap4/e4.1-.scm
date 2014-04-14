@@ -388,7 +388,7 @@
 ;(tmp-fun)
 
 (define (while? exp)
-  (tagged-list? 'while))
+  (tagged-list? exp 'while))
 (define (while-pred exp)
   (cadr exp))
 (define (while-body exp)
@@ -414,7 +414,7 @@
 (while->combination we)
 ;Value 60: (begin (define while-fun (lambda () (if (< i 10) (begin (display i) (set! i (+ i 2)) (while-fun)) (quote done)))) (while-fun))
 (put-eval! 'while (lambda (exp env)
-		    (eval (while->combination exp) env)))m
+		    (eval (while->combination exp) env)))
 (put-eval! 'define eval-definition)
 (put-eval! 'set! eval-assignment)
 (define e '(define i 3))
@@ -425,102 +425,126 @@
 ; ]=>3579
 ;Value: done
 
-;;; todo:
-;;; fix the follow bug:
 (define t '(let ((i 1))
 	     (while (< i 10)
 		    (display i)
 		    (set! i (+ i 2)))))
-(define t1 '((lambda (i) (while (< i 10) (display i) (set! i (+ i 2)))) 1))
-(define t2 '(lambda (i) (while (< i 10) (display i) (set! i (+ i 2)))))
-(eval t1 the-global-environment)
 
+;; while?  must be added to m-eval
+;; because in 't' while is convert to the body of lambda
+;; its evaluation will reduce to the use m-eval.
 
+;; that means for t the while is evaluated use m-eval, not eval
 
-;;; exercise 4.11
-(define (make-frame vars vals)
-  (cond ((and (null? vars) (null? vals))
-	 '())
-	((and (not (null? vars)) (not (null? vals)))
-	 (cons (cons (car vars) (car vals)) 
-	       (make-frame (cdr vars) (cdr vals))))
-	(else 
-	 (error "vars and vals have diffterent lengths! --- MAKE_FRAME"))))
+(define (m-eval exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))    
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp) (lambda-body exp) env))
+        ((begin? exp) (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (m-eval (cond->if exp) env))
+	((let? exp) (m-eval (let->application exp) env))
+;	((do-while? exp) (eval-do-while exp env))
+	((while? exp) (m-eval (while->combination exp) env))
+        ((application? exp)
+         (m-apply (m-eval (operator exp) env)
+                (list-of-values (operands exp) env)))
+        (else (error "Unknown expression type -- EVAL" exp))))
+(eval t the-global-environment)
+; ]=> 13579
+;Value: done
+(m-eval t the-global-environment)
+;]=> 13579
+;Value: done
 
-(define (frame-variables f)
-  (map car f))
-
-(define (frame-values f)
-  (map cdr f))
-
-(define (add-binding-to-frame var val f)
-  (set! f (cons (cons var val)
-		f)))
-
-;;; exercise 4.12
-(define (lookup-in-frame var f)
-  (define (iter vars vals)
-    (if (null? vars)
-	'()
-	(if (eq? var (car vars))
-	    (car vals)
-	    (iter (cdr vars) (cdr vals)))))
-  (let ((vars (frame-variables f))
-	(vals (frame-values f)))
-    (iter vars vals)))
-
-(define (has-variable-in-frame? var f)
-  (let ((vars (frame-variables f)))
-    (memq var vars)))
-
-(define (set-in-frame! var val f)
-  ;; this code is for binding-implemetation, see exercise 4.11
-  (let ((binding (assq var f)))
-    (if binding
-	(set-cdr! binding val))))
-
-(define (set-in-frame! var val f)
-  ;; this code is for list-implemetation
-  (define (iter vars vals)
-    (if (eq? var (car vars))
-	(set-car! vals val)
-	(iter (cdr vars) (cdr vals))))
-  (let ((vars (car f))
-	(vals (cadr f)))
-    (iter vars vals)))
-
-(define (lookup-variable-value var env)
-  ((member-procedure (lambda (f)
-		       (not (null? f))))
-   (map lookup-in-frame env)))
-
-(define (define-variable! var val env)
-  (if (has-variable-in-frame (first-frame env))
-      (set-in-frame! var val (first-frame env))
-      (add-binding-to-frame var val (first-frame env))))
-
-(define (set-variable! var val env)
-  ((member-procedure (lambda (f)
-		       (if (has-variable-in-frame? var f)
-			   (begin
-			     (set-in-frame var val env)
-			     'true)
-			   'false)))
-   env))
-
-;;; exercise 4.13
-(define (del-from-frame! var f)
-  (define (iter vars vals)
-    (if (null? vars)
-	'()
-	(if (eq? var (car vars))
-	    (begin (set! vars (cdr vars))
-		   (Set! vals (cdr vals))
-		   'OK)
-	    (iter (cdr vars) (cdr vals)))))
-  (iter (frame-variables f) (frame-values f)))
-
-(define (make-unbound! var env)
-  (let ((f (first-frame env)))
-    (if (null? (del-from-frame! var f))
-	(make-unbound! var (enclosing-enviroment env)))))
+;;;;; exercise 4.11
+;(define (make-frame vars vals)
+;  (cond ((and (null? vars) (null? vals))
+;	 '())
+;	((and (not (null? vars)) (not (null? vals)))
+;	 (cons (cons (car vars) (car vals)) 
+;	       (make-frame (cdr vars) (cdr vals))))
+;	(else 
+;	 (error "vars and vals have diffterent lengths! --- MAKE_FRAME"))))
+;
+;(define (frame-variables f)
+;  (map car f))
+;
+;(define (frame-values f)
+;  (map cdr f))
+;
+;(define (add-binding-to-frame var val f)
+;  (set! f (cons (cons var val)
+;		f)))
+;
+;;;; exercise 4.12
+;(define (lookup-in-frame var f)
+;  (define (iter vars vals)
+;    (if (null? vars)
+;	'()
+;	(if (eq? var (car vars))
+;	    (car vals)
+;	    (iter (cdr vars) (cdr vals)))))
+;  (let ((vars (frame-variables f))
+;	(vals (frame-values f)))
+;    (iter vars vals)))
+;
+;(define (has-variable-in-frame? var f)
+;  (let ((vars (frame-variables f)))
+;    (memq var vars)))
+;
+;(define (set-in-frame! var val f)
+;  ;; this code is for binding-implemetation, see exercise 4.11
+;  (let ((binding (assq var f)))
+;    (if binding
+;	(set-cdr! binding val))))
+;
+;(define (set-in-frame! var val f)
+;  ;; this code is for list-implemetation
+;  (define (iter vars vals)
+;    (if (eq? var (car vars))
+;	(set-car! vals val)
+;	(iter (cdr vars) (cdr vals))))
+;  (let ((vars (car f))
+;	(vals (cadr f)))
+;    (iter vars vals)))
+;
+;(define (lookup-variable-value var env)
+;  ((member-procedure (lambda (f)
+;		       (not (null? f))))
+;   (map lookup-in-frame env)))
+;
+;(define (define-variable! var val env)
+;  (if (has-variable-in-frame (first-frame env))
+;      (set-in-frame! var val (first-frame env))
+;      (add-binding-to-frame var val (first-frame env))))
+;
+;(define (set-variable! var val env)
+;  ((member-procedure (lambda (f)
+;		       (if (has-variable-in-frame? var f)
+;			   (begin
+;			     (set-in-frame var val env)
+;			     'true)
+;			   'false)))
+;   env))
+;
+;;;; exercise 4.13
+;(define (del-from-frame! var f)
+;  (define (iter vars vals)
+;    (if (null? vars)
+;	'()
+;	(if (eq? var (car vars))
+;	    (begin (set! vars (cdr vars))
+;		   (Set! vals (cdr vals))
+;		   'OK)
+;	    (iter (cdr vars) (cdr vals)))))
+;  (iter (frame-variables f) (frame-values f)))
+;
+;(define (make-unbound! var env)
+;  (let ((f (first-frame env)))
+;    (if (null? (del-from-frame! var f))
+;	(make-unbound! var (enclosing-enviroment env)))))
