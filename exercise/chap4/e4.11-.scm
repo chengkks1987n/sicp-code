@@ -102,19 +102,21 @@
 ;Value: 144
 
 
-;;;; exercise 4.13
-;(define (del-from-frame! var f)
-;  (define (iter vars vals)
-;    (if (null? vars)
-;	'()
-;	(if (eq? var (car vars))
-;	    (begin (set! vars (cdr vars))
-;		   (Set! vals (cdr vals))
-;		   'OK)
-;	    (iter (cdr vars) (cdr vals)))))
-;  (iter (frame-variables f) (frame-values f)))
-;
-;(define (make-unbound! var env)
-;  (let ((f (first-frame env)))
-;    (if (null? (del-from-frame! var f))
-;	(make-unbound! var (enclosing-enviroment env)))))
+(load "../../project/project5/meval.scm")
+(load "../../project/project5/environment.scm")
+(load "../../project/project5/syntax.scm")
+;;; exercise 4.13
+;we  should remove only the binding in the first frame of the environment
+;because the enclosing-environment may belong to others
+(define (make-unbound! var env)
+  (let ((f (first-frame env)))
+    (set-cdr! f (del-assq var (cdr f)))))
+
+;; test
+(m-eval '(define a 11) the-global-environment)
+(m-eval 'a the-global-environment)
+;Value: 11
+(make-unbound! 'a the-global-environment)
+;(m-eval 'a the-global-environment)
+; error> 
+;Unbound variable -- LOOKUP a
