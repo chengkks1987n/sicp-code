@@ -26,3 +26,15 @@
 ;; test
 (m-eval '(my-map car '((a 1) (b 2) (c 3))) the-global-environment)
 ;Value 16: (a b c)
+
+;;;;; exercise 4.15
+; there are only two possible outcomes for the expression (try try) :
+; 1. run forever 
+;    if the outcome is 'run forever', the result of (halt? p p) must be
+;    true, which means (try try) is halted, we get the paradox!
+; 2. halted
+;    if the outcome is halted, the result of (halt? p p) must be false,
+;    which means (try try) is run-forever, we get the paradox!
+; after all, we come to the conclution : the procedure halt? is impossible.
+
+
