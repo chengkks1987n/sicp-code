@@ -199,7 +199,7 @@
 
 ;; 1. I think the sequence-definitions is better
 ;; 2. Ben and Alyssa are both right
-;; 3. Eva's strategy is too hard to implement, we need to scan out the interl 
+;; 3. Eva's strategy is too hard to implement, we need to scan out the internal 
 ;;    difinitions which dont depend on other definitions. and run them firstly.
 ;;    if there is no definitions which donnt depend on others, there will be 
 ;;    another problem.
