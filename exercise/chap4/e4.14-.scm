@@ -38,3 +38,106 @@
 ; after all, we come to the conclution : the procedure halt? is impossible.
 
 
+;;;; exercise 4.16 a
+(define (lookup-variable-value var env)
+  (if (eq? env the-empty-environment)
+      (error "Unbound variable -- LOOKUP" var)
+      (let* ((frame (first-frame env))
+	     (binding (find-in-frame var frame)))
+	(if binding
+	    (if (eq? '*unassigned* (binding-value binding))
+		(warn "unassigned value for variable -- " var)
+		(binding-value binding))
+	    (lookup-variable-value var (enclosing-environment env))))))
+
+;; test
+(m-eval '(define a '*unassigned*) the-global-environment)
+;(m-eval 'a the-global-environment)
+;; error>
+;;unassigned value for variable --  a
+
+;;;;; 4.16 b
+(define (scan-out-definitions body)
+  (let ((vars '())
+	(vals '())
+	(others '()))
+    (define (scan seqs)
+      (cond ((null? seqs) 'done)
+	    ((definition? (car seqs))
+	     (set! vars (append vars (list (definition-variable (car seqs)))))
+	     (set! vals (append vals (list (definition-value (car seqs)))))
+	     (scan (cdr seqs)))
+	    (else (set! others (append others (list (car seqs))))
+		  (scan (cdr seqs)))))
+    (scan body)
+    (if (not (null? vars))
+	(let ((bindings (map (lambda (var)
+			       (list var ''*unassigned*))
+			     vars))
+	      (sets (map (lambda (var val)
+			   (list 'set! var val))
+			 vars vals)))
+	  (list (make-let bindings (append sets others))))
+	body)))
+      
+;; test
+(scan-out-definitions '((define (even? n)
+			  (if (= 0 n)
+			      true
+			      (odd? (- n 1))))
+			(+ 12 34)
+			(define (odd? n)
+			  (if (= 0 n)
+			      false
+			      (even? (- n 1))))
+			(cons (even? x) (odd? x))))
+;Value 23: ((let ((even? (quote *unassigned*)) (odd? (quote *unassigned*))) (set! even? (lambda (n) (if (= 0 n) true (odd? (- n 1))))) (set! odd? (lambda (n) (if (= 0 n) false (even? (- n 1))))) (+ 12 34) (cons (even? x) (odd? x))))
+
+(scan-out-definitions '((define e 12)
+			(define d 11)
+			(+ e d)))
+;Value 24: ((let ((e (quote *unassigned*)) (d (quote *unassigned*))) (set! e 12) (set! d 11) (+ e d)))
+
+;;; 4.16 c
+;install in make-procedure
+(define (make-procedure parameters body env)
+  (list 'procedure parameters (scan-out-definitions body) env))
+
+;; test
+(m-eval '(define (test)
+	   (define e 12)
+	   (define d 11)
+	   (+ e d))
+	the-global-environment)
+(m-eval '(test) the-global-environment)
+;Value: 23
+
+(m-eval '(define (f x)
+	   (define (even? n)
+	     (if (= 0 n)
+		 true
+		 (odd? (- n 1))))
+	   (define (odd? n)
+	     (if (= 0 n)
+		 false
+		 (even? (- n 1))))
+	   (cons (even? x) (odd? x)))
+	the-global-environment)
+(m-eval '(f 4) the-global-environment)
+;Value 28: (#t . #f)
+
+(m-eval '(define (f1 x)
+	   (define (even? n)
+	     (if (= 0 n)
+		 true
+		 (odd? (- n 1))))
+	   (cons (even? x) (odd? x)) ;this line will move to the end by scan-out-definitions
+	   (define (odd? n)
+	     (if (= 0 n)
+		 false
+		 (even? (- n 1)))))
+	the-global-environment)
+(m-eval '(f1 4) the-global-environment)
+;Value 29: (#t . #f)
+
+
