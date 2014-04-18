@@ -141,3 +141,68 @@
 ;Value 29: (#t . #f)
 
 
+;;;; exercise 4.17
+;;; CODE 1
+;(lambda <vars>
+;  (define u <e1>)
+;  (define v <e2>)
+;  <e3>)
+;;; CODE 2
+;(lambda <vars>
+;  (let ((u '*unassigned*)
+;	(v '*unassigned*))
+;    (set! u <e1>)
+;    (set! v <e2>)
+;    <e3>))
+;;; CODE 3
+;(lambda <vars>
+;  ((lambda (u v)
+;     (set! u <e1>)
+;     (set! v <e2>)
+;     <e3>)
+;   '*unassigned* '*unassigned*))
+;;; CODE 4
+;(lambda <vars>
+;  (define u '*unassigned*)
+;  (define v '*unassigned*)
+;  (set! u <e1>)
+;  (set! v <e2>)
+;  <e3>)
+
+; 1. for sequence definitions (C0de-1), only one frame is needed.
+; 2. for simultaneous definitions (Code-2 , will reduce to code-3) need two frames,
+;    one is for the inner-lambda
+; 3. if transform code-1 to code-4, we get the simultaneous definitions and only
+;     one frame is needed.
+
+;;;; exercise 4.18
+; I think both the two ways (one way is like this, the other is in exercixe 4.16)
+;   will work. and the result is the same.
+
+;;;; exercise 4.19
+;; simultaneous-definitions, implememted in exercise 4.16
+(define t '(let ((a 1))
+	     (define (f x)
+	       (define b (+ a x))
+	       (define a 5)
+	       (+ a b))
+	     (f 10)))
+;(m-eval t the-global-environment)
+;Warning: unassigned value for variable --  a
+
+;; sequence-definitions
+(load "meval.scm")
+(load "environment.scm")
+(load "syntax.scm")
+(m-eval t the-global-environment)
+;Value: 16
+
+;; 1. I think the sequence-definitions is better
+;; 2. Ben and Alyssa are both right
+;; 3. Eva's strategy is too hard to implement, we need to scan out the interl 
+;;    difinitions which dont depend on other definitions. and run them firstly.
+;;    if there is no definitions which donnt depend on others, there will be 
+;;    another problem.
+
+
+
