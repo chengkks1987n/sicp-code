@@ -376,3 +376,43 @@
 	 (+ x y))
       the-global-environment)
 ;Value: 32
+
+;;;; exercise 4.23
+;The version in the book, use the procedure sequencially to combine the
+;expressions's analysis results into one procedure.and return this
+; procedure 
+
+; the result of Alyssa's verson contains all the expressions's analysis
+; result. in eval they are executed sequencially.
+
+;If there is only one expression in sequence, they are the same;
+;if there are more than one, the difference will show up
+
+;I cannt tell which one is better.
+
+;;;; exercise 4.24
+; this procedure is from project 3 in file 'search.scm'
+(define (timed f . args)
+  (let ((start (runtime)))
+    (let ((val (apply f args)))
+      (newline)
+      (display "time expended: ")
+      (display (- (runtime) start))
+      val)))
+
+(define t '(define (fib n)
+	     (if (< n 2)
+		 n
+		 (+ (fib (- n 1)) (fib (- n 2))))))
+(timed m-eval t the-global-environment)
+(timed m-eval '(fib 20) the-global-environment)
+;time expended: 3.5800000000000125
+;;Value: 6765
+(timed eval t the-global-environment)
+(timed eval '(fib 20) the-global-environment)
+;time expended: 1.1599999999999966
+;Value: 6765
+
+;; From the results,we can see the evalutor with syntax analysis is
+;; faster.
+;; you can do some more tests.
