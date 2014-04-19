@@ -416,3 +416,67 @@
 ;; From the results,we can see the evalutor with syntax analysis is
 ;; faster.
 ;; you can do some more tests.
+
+
+;;; exercise 4.25
+;it will work in normal-order language, but not in applicative-order
+
+; in applicative-order, it will not work.
+; to evaluate the factorial, the unless must evaluate, to evaluate uless,
+; its second argument factorial must evaluate, this will loop forever.
+(define (unless condition usual-value exceptional-value)
+  (if condition exceptional-value usual-value))
+(define (factorial n)
+  (unless (= n 1)
+	  (* n (factorial (- n 1)))
+	  1))
+;(factorial 1)
+;Aborting!: maximum recursion depth exceeded
+
+;;; exercise 4.26
+(load "meval.scm")
+(load "environment.scm")
+(load "syntax.scm")
+(define (unless? exp)
+  (tagged-list? exp 'unless))
+(define unless-cond cadr)
+(define unless-usual caddr)
+(define unless-exception cadddr)
+;; private form for unless
+(define (eval-unless exp env)
+  (if (m-eval (unless-cond exp) env)
+      (m-eval (unless-exception exp) env)
+      (m-eval (unless-usual exp) env)))
+;; derived form for unlesss
+(define (unless->cond exp)
+  (list 'cond
+	(list (unless-cond exp) (unless-exception exp))
+	(list 'else (unless-usual exp))))
+
+(define t1 '(unless (= b 0)
+		    (/ a b)
+		    (begin (display "exception: returning 0")
+			   0)))
+(m-eval '(define b 0) the-global-environment)
+(eval-unless t1 the-global-environment)
+; ]=> exception: returning 0
+;Value: 0
+(m-eval '(define b 1) the-global-environment)
+(m-eval '(define a 1) the-global-environment)
+(eval-unless t1 the-global-environment)
+;Value: 1
+
+(unless->cond t1)
+;Value 11: (cond ((= b 0) (begin (display "exception: returning 0") 0)) (else (/ a b)))
+(m-eval (unless->cond t1) the-global-environment)
+;Value: 1
+(m-eval '(define b 0) the-global-environment)
+(eval-unless t1 the-global-environment)
+; ]=> exception: returning 0
+;Value: 0
+
+;Alyssa is right too, if unless is a syntax, we cannt use it as
+; procedure arguments and return values of procedures.
+; if unless is a procedure, we can wirte code like this:
+; (list + - * / unless)
+; With unless as a procedure, give us more flexibility
