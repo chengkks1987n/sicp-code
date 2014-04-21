@@ -561,3 +561,39 @@
 ;If the operator is a thunk object, we msut use acual-value to force it, 
 ;get the procedure that delayed.
 
+;;;; exercise 4.29
+;; without memoization
+(define (force-it obj)
+  (if (thunk? obj)
+      (actual-value (thunk-exp obj) (thunk-env obj))
+      obj))
+
+(l-eval '(define count 0) the-global-environment)
+(l-eval '(define (id x)
+	   (set! count (+ count 1))
+	   x)
+	the-global-environment)
+(l-eval '(define (square x)
+	   (* x x))
+	the-global-environment)
+(l-eval '(square (id 10)) the-global-environment)
+;Value: 100
+(l-eval 'count the-global-environment)
+;Value: 2
+
+;; with memoization
+(load "leval.scm")
+(l-eval '(define count 0) the-global-environment)
+(l-eval '(define (id x)
+	   (set! count (+ count 1))
+	   x)
+	the-global-environment)
+(l-eval '(define (square x)
+	   (* x x))
+	the-global-environment)
+(l-eval '(square (id 10)) the-global-environment)
+;Value: 100
+(l-eval 'count the-global-environment)
+;Value: 1
+
+;;;; exercise 4.30
