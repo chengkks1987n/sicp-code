@@ -79,3 +79,8 @@
 (define (or? expr) (tagged-list? expr 'or))
 (define or-exprs cdr)
 (define (make-or exprs) (cons 'or exprs))
+
+(define (true? x)
+  (not (eq? x false)))
+(define (false? x)
+  (eq? x false))
