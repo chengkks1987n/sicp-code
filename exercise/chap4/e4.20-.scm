@@ -488,6 +488,7 @@
 	   (set! count (+ count 1))
 	   x)
 	the-global-environment)
+
 (l-eval '(define w (id (id 10))) the-global-environment)
 (actual-value 'count the-global-environment)
 ;Value: 1
@@ -501,10 +502,62 @@
 (l-eval 'count the-global-environment)
 ;Value: 2
 
+ (define wt (l-eval '(id (id 10)) the-global-environment))
+;Value: wt
+ (thunk? wt)
+;Value: #t
+ (thunk-exp wt)
+;Value 16: (id 10)
+
 ;;;;  explain to exercise 4.27
 ;for (define w (id (id 10): take (id (id 10)) as (id-1 (id-2 10)), 
 ;when evaluate it in lazy-evaluator, (id-2 10) is the argument of
 ;id-1 which will be converted to thunk-object, only id-1 will be 
 ;evaluated, count is one. the variable  w is equal to ('thunk (id-2 10)),
 ;when we get the actual value of w, id-2 will evaluate. count will be 2.
+
+;definitions are not lazy-evaluate, only the user defied applications are
+; so at first count is one. If definitions are lazy-evaluate count would
+; be zero.
+
+;;;; exercise 4.28
+;; run without actual-value
+(define (l-eval exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))    
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp)
+			 (lambda-body exp) env))
+        ((begin? exp) (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (l-eval (cond->if exp) env))
+	((let? exp) (l-eval (let->application exp) env))
+        ((application? exp)
+         (l-apply (operator exp) ;;; without actual-value
+		  (operands exp)
+		  env))
+        (else (error "Unknown expression type -- L-EVAL" exp))))
+
+(l-eval '(define (get-proc)
+	   (lambda ()
+	     (display "this is a procedure")))
+	the-global-environment)
+;(l-eval '((get-proc)) the-global-environment)
+; error>
+;Unknow procedure type --- l-apply (get-proc)
+
+;; run with actual-value
+(load "leval.scm")
+(l-eval '(define (get-proc)
+	   (lambda ()
+	     (display "this is a procedure")))
+	the-global-environment)
+(l-eval '((get-proc)) the-global-environment)
+; ]=> this is a procedure
+
+;If the operator is a thunk object, we msut use acual-value to force it, 
+;get the procedure that delayed.
 
