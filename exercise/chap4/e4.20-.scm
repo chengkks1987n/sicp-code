@@ -480,3 +480,23 @@
 ; if unless is a procedure, we can wirte code like this:
 ; (list + - * / unless)
 ; With unless as a procedure, give us more flexibility
+
+;;;; exercise 4.27
+(load "leval.scm")
+(l-eval '(define count 0) the-global-environment)
+(l-eval '(define (id x)
+	   (set! count (+ count 1))
+	   x)
+	the-global-environment)
+(l-eval '(define w (id (id 10))) the-global-environment)
+(actual-value 'count the-global-environment)
+;Value: 1
+(l-eval 'count the-global-environment)
+;Value: 1
+(actual-value 'w the-global-environment)
+;Value: 10
+;(l-eval 'w the-global-environment) => this will get thunk of w.
+(actual-value 'count the-global-environment)
+;Value: 2
+(l-eval 'count the-global-environment)
+;Value: 2
