@@ -500,3 +500,11 @@
 ;Value: 2
 (l-eval 'count the-global-environment)
 ;Value: 2
+
+;;;;  explain to exercise 4.27
+;for (define w (id (id 10): take (id (id 10)) as (id-1 (id-2 10)), 
+;when evaluate it in lazy-evaluator, (id-2 10) is the argument of
+;id-1 which will be converted to thunk-object, only id-1 will be 
+;evaluated, count is one. the variable  w is equal to ('thunk (id-2 10)),
+;when we get the actual value of w, id-2 will evaluate. count will be 2.
+
