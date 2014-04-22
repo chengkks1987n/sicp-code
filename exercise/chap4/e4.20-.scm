@@ -597,3 +597,51 @@
 ;Value: 1
 
 ;;;; exercise 4.30
+;; a)
+;The first argument of for-each is a procedure. 
+;In procedure for-each, when the evaluator runs to (proc (car items)),
+; no matter wether it's evaluated by actual-value or l-eval, 
+; proc will be forced. so Ben is right for the behavior of for-each.
+
+;; b)
+; with the original eval-sequence :
+; in p2's internal-procedure p, the boby e will not be evaluated
+;(p1 1) -> (1 2)
+;(p2 1) -> 1
+(define t1 '(define (p1 x)
+	      (set! x (cons x '(2)))
+	      x))
+(define t2 '(define (p2 x)
+	      (define (p e)
+		e
+		x)
+	      (p (set! x (cons x '(2))))))
+(l-eval t1 the-global-environment)
+(actual-value '(p1 1) the-global-environment)
+;Value 19: (1 2)
+(l-eval t2 the-global-environment)
+(actual-value '(p2 1) the-global-environment)
+;Value: 1
+
+; with Cy's eval-sequnence :
+; in p2's internal-procedure p, the boby e will be evaluated
+;(p1 1) -> (1 2)
+;(p2 1) -> (1 2)
+(define (eval-sequence exps env)
+  (cond ((last-exp? exps) (l-eval (first-exp exps) env))
+	(else (actual-value (first-exp exps) env)
+	      (eval-sequence (rest-exps exps) env))))
+(l-eval t1 the-global-environment)
+(actual-value '(p1 1) the-global-environment)
+;Value 19: (1 2)
+(l-eval t2 the-global-environment)
+(define w (l-eval '(p2 1) the-global-environment))
+(actual-value '(p2 1) the-global-environment)
+;Value 28: (1 2)
+
+;; c)
+; see the explain for a)
+
+;; d)
+;it's an open question.
+
