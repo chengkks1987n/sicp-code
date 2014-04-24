@@ -645,3 +645,126 @@
 ;; d)
 ;it's an open question.
 
+;;;; exercise 4.31
+(load "leval.scm")
+;; is the procedre argument need to lazy?
+(define (lazy-parameter? exp)
+  (and (pair? exp)
+       (eq? (length exp) 2)
+       (eq? (cadr exp) 'lazy)))
+;; is the procedre argument need to lazy-memo?
+(define (lazy-memo-parameter? exp)
+  (and (pair? exp)
+       (eq? (length exp) 2)
+       (eq? (cadr exp) 'lazy-memo)))
+; test for lazy-parameter, the tests for lazy-memo-parameter is
+; the same.
+(lazy-parameter? 'a)
+;Value: #f
+(lazy-parameter? '(a))
+;Value: #f
+(lazy-parameter? '(a lazy))
+;Value: #t
+(lazy-parameter? '(a b lazy))
+;Value: #f
+(lazy-parameter? '((a b) lazy))
+;Value: #t
+
+(define (delay-lazy exp env)
+  (list 'thunk exp env))
+(define (delay-lazy-memo exp env)
+  (list 'thunk-memo exp env))
+(define (thunk-memo? obj)
+  (tagged-list? obj 'thunk-memo))
+  
+(define (force-it obj)
+  (cond ((thunk? obj)
+	 (actual-value (thunk-exp obj) (thunk-env obj)))
+	((thunk-memo? obj)
+	 (let ((result (actual-value
+			(thunk-exp obj)
+			(thunk-env obj))))
+	   (set-car! obj 'evaluated-thunk)
+	   (set-car! (cdr obj) result)
+	   (set-cdr! (cdr obj) '())
+	   result))
+	((evaluated-thunk? obj) (thunk-value obj))
+	(else obj)))
+
+(define (list-of-part-delay-args parameters args env)
+  (define (to-delay parameter arg)
+    (cond  ((lazy-parameter? parameter)
+	    (delay-lazy arg env))
+	   ((lazy-memo-parameter? parameter)
+	    (delay-lazy-memo arg env))
+	   (else arg)))
+  (map to-delay parameters args))
+
+(define (parameters-without-lazy parameters)
+  (define (to-parameter p)
+    (if (or (lazy-parameter? p) (lazy-memo-parameter? p))
+	(car p)
+	p))
+  (map to-parameter parameters))
+
+(define (l-apply proc args env)
+  (cond ((primitive-procedure? proc)
+	 (apply-primitive-procedure 
+	  proc
+	  (list-of-arg-values args env)))
+	((compound-procedure? proc)
+	 (let ((parameters o(procedure-parameters proc)))
+	   (eval-sequence
+	    (procedure-body proc)
+	    (extend-environment
+	     (parameters-without-lazy parameters)
+	     (list-of-part-delay-args parameters args env)
+	     (procedure-environment proc)))))
+	 (else (error "Unknow procedure type --- l-apply" proc))))
+
+;;; test 
+(define t '(define (f a (b lazy) c (d lazy-memo))
+	     (+ a b c d)))
+(l-eval t the-global-environment)
+(l-eval '(f 1 2 3 4) the-global-environment)
+;Value: 10
+(define t1 '(define (f1 a (b lazy) (d lazy-memo))
+	      a))
+(l-eval t1 the-global-environment)
+(l-eval '(f1 1 2 3) the-global-environment)
+;Value: 1
+(define t2 '(define (f2 a (b lazy) (d lazy-memo))
+	      b))
+(l-eval t2 the-global-environment)
+(define r2 (l-eval '(f2 1 2 3) the-global-environment))
+(thunk? r2)
+;Value: #t
+(thunk-exp r2)
+;Value: 2
+(force-it r2)
+;Value: 2
+(thunk? r2)
+;Value: #t          ; this result means that r2 is without memoization
+
+(define t3 '(define (f3 a (b lazy) (d lazy-memo))
+	      d))
+(l-eval t3 the-global-environment)
+(define r3 (l-eval '(f3 1 2 3) the-global-environment))
+(thunk-memo? r3)
+;Value: #t
+(thunk-exp r3)
+;Value: 3
+(force-it r3)
+;Value: 3
+(thunk-memo? r3)
+;Value: #f
+(evaluated-thunk? r3)
+;Value: #t          ; this result means that r2 is without memoization
+(thunk-value r3)
+;Value: 3
+
+
+
+
+
+
