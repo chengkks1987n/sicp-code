@@ -1,0 +1,26 @@
+;;; exercise 4.42
+(define (liars-puzzle)
+  (let ((b (amb 1 2 3 4 5))
+	(e (amb 1 2 3 4 5))
+	(j (amb 1 2 3 4 5))
+	(k (amb 1 2 3 4 5))
+	(m (amb 1 2 3 4 5)))
+    (require (distinct? b e j k m))
+    (require (or (and (= k 2) (not (= b 3)))
+		 (and (not (= k 2) (= b 3)))))
+    (require (or (and (= e 1) (not (= j 2)))
+		 (and (not (= e 1) (= j 2)))))
+    (require (or (and (= j 3) (not (= e 5)))
+		 (and (not (= j 3) (= e 5)))))
+    (require (or (and (= k 2) (not (= m 4)))
+		 (and (not (= k 2) (= m 4)))))
+    (require (or (and (= m 4) (not (= b 1)))
+		 (and (not (= m 4) (= b 1)))))
+    (list ('betty b)
+	  ('ethel e)
+	  ('joan j)
+	  ('kitty k)
+	  ('mary m))))
+
+;;; exercise 4.43
+
